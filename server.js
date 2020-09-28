@@ -5,10 +5,25 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const requests = require("./requests.js");
 const axios = require("./axios.js");
-
+const {
+  signup,
+  login,
+  getUserDetails,
+  followUser,
+  unfollowUser,
+} = require("./routes/userRoutes.js");
+const mashDBAuth = require("./util/mashDBAuth.js");
+const {
+  postOnePosts,
+  likePost,
+  unlikePost,
+  deletePost,
+  getSubscribedPost,
+  getMyPost,
+} = require("./routes/postRoutes.js");
 //....................................................................................
 
-app.use(cors((origin = "http://example.com"), (optionsSuccessStatus = 200)));
+app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
 app.use(express.json());
 mongoose.connect(process.env.DB_URI, {
   useCreateIndex: true,
@@ -303,6 +318,21 @@ app.get("/api/v1/movie/details/:movieId", (req, res) => {
     });
 });
 //....................................................................................
+
+app.post("/api/v1/home/signup", signup);
+app.post("/api/v1/home/login", login);
+app.get("/api/v1/home/user/:id", mashDBAuth, getUserDetails);
+app.put("/api/v1/home/user/follow", mashDBAuth, followUser);
+app.put("/api/v1/home/user/unfollow", mashDBAuth, unfollowUser);
+//.......................................................................
+app.get("/api/v1/home/getSubPost", mashDBAuth, getSubscribedPost);
+app.post("/api/v1/home/post", mashDBAuth, postOnePosts);
+app.put("/api/v1/home/like-post", mashDBAuth, likePost);
+app.put("/api/v1/home/unlike-post", mashDBAuth, unlikePost);
+app.delete("/api/v1/home/delete-post/:postId", mashDBAuth, deletePost);
+app.get("/api/v1/home/getSubPost", mashDBAuth, getSubscribedPost);
+app.get("/api/v1/home/myPost", mashDBAuth, getMyPost);
+//...........................................................................................
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
