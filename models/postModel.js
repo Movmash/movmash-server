@@ -19,7 +19,7 @@ const postSchema = new Schema(
       ref: "User",
     },
     likes: [{ type: ObjectId, ref: "User" }],
-    comments: [{ text: String, postedBy: { type: ObjectId, ref: "User" } }],
+    comments: [{ type: ObjectId, ref: "Comment" }],
     movieId: Number,
     review: String,
     description: String,

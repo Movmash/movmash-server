@@ -1,4 +1,5 @@
 const Post = require("../models/postModel");
+const Comment = require("../models/commentModel");
 const User = require("../models/userModel");
 exports.postOnePosts = (req, res) => {
   // console.log(req.user);
@@ -169,6 +170,7 @@ exports.deletePost = (req, res) => {
 };
 
 exports.getSubscribedPost = (req, res) => {
+  // pagination require ............................
   Post.find({ postedBy: { $in: req.user.followings } })
     .populate("postedBy", "_id email userName profileImageUrl")
     .sort("-createdAt")
@@ -181,13 +183,107 @@ exports.getSubscribedPost = (req, res) => {
 };
 
 exports.getMyPost = (req, res) => {
+  // pageination require ......................................
   console.log(req.user._id);
   Post.find({ postedBy: req.user._id })
     .populate("postedBy", "_id email userName profileImageUrl")
+    // .select("comments")
     .then((myPost) => {
       return res.status(200).json(myPost);
     })
     .catch((e) => {
       return res.status(500).json(e);
+    });
+};
+
+exports.postComment = (req, res) => {
+  if (req.body.comment.trim() === "")
+    return res.status(422).json({ message: "commet should not be empty" });
+  const newComment = {
+    commentedBy: req.user._id,
+    postId: req.body.postId,
+    comment: req.body.comment,
+  };
+
+  Comment.create(newComment)
+    .then((result) => {
+      console.log(result);
+      Post.findByIdAndUpdate(
+        req.body.postId,
+        { $push: { comments: result._id }, $inc: { commentCount: 1 } },
+        { new: true }
+      ).exec((err, doc) => {
+        if (err) return res.status(422).json(err);
+        return res.status(201).json({ doc, result });
+      });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+};
+
+exports.deleteComment = (req, res) => {
+  Comment.findOne({ _id: req.params.commentId })
+    .populate("commentedBy", "_id")
+    .exec((err, comment) => {
+      console.log(comment);
+      if (err || !comment) return res.status(422).json(err);
+      if (comment.commentedBy._id.toString() === req.user._id.toString()) {
+        comment.remove().then((result) => {
+          Post.findByIdAndUpdate(
+            comment.postId,
+            {
+              $pull: { comments: req.params.commentId },
+              $inc: { commentCount: -1 },
+            },
+            { new: true }
+          )
+            .then((doc) => {
+              console.log(doc);
+              console.log(result);
+              return res.status(201).json({ doc, result });
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        });
+      }
+    });
+};
+exports.likeComment = (req, res) => {
+  Comment.findByIdAndUpdate(
+    req.body.commentId,
+    {
+      $push: { likes: req.user._id },
+      $inc: { likeCount: 1 },
+    },
+    { new: true }
+  ).exec((err, result) => {
+    if (err) return res.status(422).json({ error: err });
+    return res.status(201).json(result);
+  });
+};
+
+exports.unlikeComment = (req, res) => {
+  Comment.findByIdAndUpdate(
+    req.body.commentId,
+    { $pull: { likes: req.user._id }, $inc: { likeCount: -1 } },
+    { new: true }
+  ).exec((err, result) => {
+    if (err) return res.status(422).json({ error: err });
+    return res.status(201).json(result);
+  });
+};
+
+exports.getPostComments = (req, res) => {
+  //pagination needed...............................
+  Comment.find({ postId: req.body.postId })
+    .sort("-createdAt")
+    .then((doc) => {
+      return res.status(200).json(doc);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(422).json(e);
     });
 };

@@ -175,6 +175,7 @@ exports.getUserDetails = (req, res) => {
         });
     })
     .catch((e) => {
+      console.log(e);
       return res.status(503).json(e);
     });
 };
@@ -261,4 +262,56 @@ exports.unfollowUser = (req, res) => {
         });
     }
   );
+};
+
+exports.getFollowersDetails = (req, res) => {
+  User.findOne({ _id: req.user._id })
+    .select("followers")
+    .populate("followers", "_id userName profileImageUrl")
+    .then((doc) => {
+      return res.status(200).json(doc.followers);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(422).json(e);
+    });
+};
+exports.getFollowingsDetails = (req, res) => {
+  User.findOne({ _id: req.user._id })
+    .select("followings")
+    .populate("followings", "_id userName profileImageUrl")
+    .then((doc) => {
+      return res.status(200).json(doc.followings);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(422).json(e);
+    });
+};
+
+exports.updateUserDetails = (req, res) => {
+  const { userName, genre, bio, fullName } = req.body;
+  if (userName.trim() === "")
+    return res.status(422).json({ error: "username must not be empty" });
+  User.find({ userName: userName })
+    .then((foundUserName) => {
+      if (foundUserName.length !== 0)
+        return res.status(200).json({ message: "Username is already exist" });
+
+      User.findByIdAndUpdate(
+        req.user._id,
+        { userName: userName, genre: genre, bio: bio, fullName: fullName },
+        { new: true }
+      )
+        .then((doc) => {
+          return res.status(201).json(doc);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(422).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };

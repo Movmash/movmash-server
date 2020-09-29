@@ -21,6 +21,10 @@ const notificationSchema = new Schema(
       type: ObjectId,
       ref: "User",
     },
+    commentId: {
+      type: ObjectId,
+      ref: "Comment",
+    },
   },
   {
     timestamps: true,
