@@ -180,6 +180,18 @@ exports.getUserDetails = (req, res) => {
     });
 };
 
+exports.getUser = (req, res) => {
+  User.findOne({ email: req.user.email })
+    .select("-password")
+    .then((user) => {
+      if (!user) return res.status(404).json({ message: "user Not Found" });
+
+      return res.status(200).json(user);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+};
 // exports.followUser = (req, res) => {
 //   // const id = JSON.parse(req.body.followId);
 //   // console.log(req.user._id);

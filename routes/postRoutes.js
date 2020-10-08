@@ -13,6 +13,7 @@ exports.postOnePosts = (req, res) => {
       }
       const newReviewPost = {
         // profileImageUrl: req.body.profileImageUrl,
+
         postedBy: req.user,
         rating: req.body.rating,
         type: req.body.type,

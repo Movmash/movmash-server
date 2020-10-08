@@ -5,9 +5,6 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const requests = require("./requests.js");
 const axios = require("./axios.js");
-const Notification = require("./models/notificationModel");
-const Post = require("./models/postModel");
-const User = require("./models/userModel");
 const {
   signup,
   login,
@@ -17,6 +14,7 @@ const {
   getFollowersDetails,
   getFollowingsDetails,
   updateUserDetails,
+  getUser,
 } = require("./routes/userRoutes.js");
 const mashDBAuth = require("./util/mashDBAuth.js");
 const {
@@ -36,6 +34,7 @@ const {
   markNotificationRead,
   getAllNotifications,
 } = require("./routes/notificationRoutes.js");
+const { json } = require("body-parser");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -55,6 +54,17 @@ db.once("open", () => {
 });
 
 //....................................................................................
+app.get("/api/v1/movie/search-movie", (req, res) => {
+  const query = req.query.query;
+  axios
+    .get(requests.searchMovies + `&query=${query}`)
+    .then((response) => {
+      return res.status(200).json(response.data);
+    })
+    .catch((e) => {
+      return res.status(500).json(e);
+    });
+});
 
 app.get("/api/v1/movie/upcoming-cover", (req, res) => {
   let results = [];
@@ -92,7 +102,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
   const genre = req.params.genreName;
   const page = req.params.pageNumber;
   switch (genre) {
-    case "trending":
+    case "Trending":
       axios
         .get(requests.fetchTrending + `&page=${page}`)
         .then((response) => {
@@ -103,7 +113,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "topRated":
+    case "Top Rated":
       axios
         .get(requests.fetchTopRated + `&page=${page}`)
         .then((response) => {
@@ -114,7 +124,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "action":
+    case "Action":
       axios
         .get(requests.fetchActionMovies + `&page=${page}`)
         .then((response) => {
@@ -125,7 +135,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "comedy":
+    case "Comedy":
       axios
         .get(requests.fetchComedyMovies + `&page=${page}`)
         .then((response) => {
@@ -136,7 +146,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "horror":
+    case "Horror":
       axios
         .get(requests.fetchHorrorMovies + `&page=${page}`)
         .then((response) => {
@@ -147,7 +157,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "romance":
+    case "Romance":
       axios
         .get(requests.fetchRomanceMovies + `&page=${page}`)
         .then((response) => {
@@ -158,7 +168,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "documentary":
+    case "Documentary":
       axios
         .get(requests.fetchDocumentaries + `&page=${page}`)
         .then((response) => {
@@ -169,7 +179,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "upcoming":
+    case "Upcoming":
       axios
         .get(requests.fetchUpcomingMovies + `&page=${page}`)
         .then((response) => {
@@ -180,7 +190,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "adventure":
+    case "Adventure":
       axios
         .get(requests.fetchAdventureMovies + `&page=${page}`)
         .then((response) => {
@@ -191,7 +201,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "animation":
+    case "Animation":
       axios
         .get(requests.fetchAnimationMovies + `&page=${page}`)
         .then((response) => {
@@ -202,7 +212,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "drama":
+    case "Drama":
       axios
         .get(requests.fetchDramaMovies + `&page=${page}`)
         .then((response) => {
@@ -213,7 +223,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "crime":
+    case "Crime":
       axios
         .get(requests.fetchCrimeMovies + `&page=${page}`)
         .then((response) => {
@@ -224,7 +234,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "family":
+    case "Family":
       axios
         .get(requests.fetchFamilyMovies + `&page=${page}`)
         .then((response) => {
@@ -235,7 +245,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "fanatasy":
+    case "Fantasy":
       axios
         .get(requests.fetchFantasyMovies + `&page=${page}`)
         .then((response) => {
@@ -246,7 +256,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "history":
+    case "History":
       axios
         .get(requests.fetchHistoryMovies + `&page=${page}`)
         .then((response) => {
@@ -257,7 +267,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "music":
+    case "Music":
       axios
         .get(requests.fetchMusicMovies + `&page=${page}`)
         .then((response) => {
@@ -268,7 +278,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "scifi":
+    case "Sci-Fi":
       axios
         .get(requests.fetchSciFiMovies + `&page=${page}`)
         .then((response) => {
@@ -279,7 +289,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "tvMovie":
+    case "TV Movie":
       axios
         .get(requests.fetchTVMovies + `&page=${page}`)
         .then((response) => {
@@ -290,7 +300,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "thiller":
+    case "Thriller":
       axios
         .get(requests.fetchThrillerMovies + `&page=${page}`)
         .then((response) => {
@@ -301,7 +311,7 @@ app.get("/api/v1/movie/genre/:genreName/:pageNumber", (req, res) => {
           res.status(500).json(e.message);
         });
       break;
-    case "war":
+    case "War":
       axios
         .get(requests.fetchWarMovies + `&page=${page}`)
         .then((response) => {
@@ -343,6 +353,7 @@ app.put("/api/v1/home/user/unfollow", mashDBAuth, unfollowUser);
 app.get("/api/v1/home/get-followers", mashDBAuth, getFollowersDetails);
 app.get("/api/v1/home/get-followings", mashDBAuth, getFollowingsDetails);
 app.put("/api/v1/home/update-user-details", mashDBAuth, updateUserDetails);
+app.get("/api/v1/home/get-user", mashDBAuth, getUser);
 //...........................................................................................
 app.get("/api/v1/home/get-notification", mashDBAuth, getAllNotifications);
 app.put(
@@ -356,7 +367,7 @@ app.post("/api/v1/home/post", mashDBAuth, postOnePosts);
 app.put("/api/v1/home/like-post", mashDBAuth, likePost);
 app.put("/api/v1/home/unlike-post", mashDBAuth, unlikePost);
 app.delete("/api/v1/home/delete-post/:postId", mashDBAuth, deletePost);
-app.get("/api/v1/home/getSubPost", mashDBAuth, getSubscribedPost);
+// app.get("/api/v1/home/getSubPost", mashDBAuth, getSubscribedPost);
 app.get("/api/v1/home/myPost", mashDBAuth, getMyPost);
 app.post("/api/v1/home/comment-post", mashDBAuth, postComment);
 app.delete("/api/v1/home/delete-comment/:commentId", mashDBAuth, deleteComment);
