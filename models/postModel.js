@@ -23,10 +23,16 @@ const postSchema = new Schema(
     movieId: Number,
     review: String,
     description: String,
-    showTime: String,
-    genre: String,
+    showTimeFrom: { type: Date },
+    showTimeTo: { type: Date },
+    genreName: [{ type: String }],
     language: String,
     duration: String,
+    genreId: [{ type: Number }],
+    moviePoster: String,
+    releaseYear: Number,
+    movieTitle: String,
+    overview: String,
   },
   { timestamps: true }
 );

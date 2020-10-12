@@ -17,9 +17,12 @@ exports.postOnePosts = (req, res) => {
         postedBy: req.user,
         rating: req.body.rating,
         type: req.body.type,
-        description: req.body.description,
         movieId: req.body.movieId,
         review: req.body.review,
+        genreId: req.body.genreId,
+        moviePoster: req.body.moviePoster,
+        releaseYear: req.body.releaseYear,
+        movieTitle: req.body.movieTitle,
       };
       Post.create(newReviewPost)
         .then((doc) => {
@@ -48,7 +51,13 @@ exports.postOnePosts = (req, res) => {
         type: req.body.type,
         description: req.body.description,
         movieId: req.body.movieId,
-        showTime: req.body.showTime,
+        showTimeFrom: req.body.showTimeFrom,
+        showTimeTo: req.body.showTimeTo,
+        genreId: req.body.genreId,
+        moviePoster: req.body.moviePoster,
+        releaseYear: req.body.releaseYear,
+        movieTitle: req.body.movieTitle,
+        overview: req.body.overview,
       };
       Post.create(newTicketPost)
         .then((doc) => {
@@ -72,17 +81,17 @@ exports.postOnePosts = (req, res) => {
       break;
     case "suggestMe":
       console.log("3");
-      if (req.body.description.trim() === "") {
-        return res
-          .status(400)
-          .json({ description: "Say which type of movie you want" });
-      }
+      // if (req.body.description.trim() === "") {
+      //   return res
+      //     .status(400)
+      //     .json({ description: "Say which type of movie you want" });
+      // }
       const newSuggestMePost = {
         postedBy: req.user,
         rating: req.body.rating,
         type: req.body.type,
-        description: req.body.description,
-        genre: req.body.genre,
+
+        genreName: req.body.genreName,
         language: req.body.language,
         duration: req.body.duration,
       };
@@ -101,6 +110,7 @@ exports.postOnePosts = (req, res) => {
             });
         })
         .catch((e) => {
+          console.log(e);
           return res.status(500).json(e);
         });
       break;
@@ -172,11 +182,11 @@ exports.deletePost = (req, res) => {
 
 exports.getSubscribedPost = (req, res) => {
   // pagination require ............................
-  Post.find({ postedBy: { $in: req.user.followings } })
+  Post.find({ postedBy: { $in: [...req.user.followings, req.user._id] } })
     .populate("postedBy", "_id email userName profileImageUrl")
     .sort("-createdAt")
     .then((posts) => {
-      return res.status(200).json({ posts });
+      return res.status(200).json(posts);
     })
     .catch((e) => {
       console.log(e);
