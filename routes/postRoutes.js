@@ -208,29 +208,64 @@ exports.getMyPost = (req, res) => {
 };
 
 exports.postComment = (req, res) => {
+  console.log(req.body.comment);
   if (req.body.comment.trim() === "")
     return res.status(422).json({ message: "commet should not be empty" });
-  const newComment = {
-    commentedBy: req.user._id,
-    postId: req.body.postId,
-    comment: req.body.comment,
-  };
+  if (req.body.postType === "review") {
+    const newComment = {
+      commentedBy: req.user._id,
+      postId: req.body.postId,
+      comment: req.body.comment,
+      postType: req.body.postType,
+    };
 
-  Comment.create(newComment)
-    .then((result) => {
-      console.log(result);
-      Post.findByIdAndUpdate(
-        req.body.postId,
-        { $push: { comments: result._id }, $inc: { commentCount: 1 } },
-        { new: true }
-      ).exec((err, doc) => {
-        if (err) return res.status(422).json(err);
-        return res.status(201).json({ doc, result });
+    Comment.create(newComment)
+      .then((result) => {
+        console.log(result);
+        Post.findByIdAndUpdate(
+          req.body.postId,
+          { $push: { comments: result._id }, $inc: { commentCount: 1 } },
+          { new: true }
+        )
+          .populate("comments")
+          .exec((err, doc) => {
+            if (err) return res.status(422).json(err);
+            return res.status(201).json(doc);
+          });
+      })
+      .catch((e) => {
+        console.log(e);
       });
-    })
-    .catch((e) => {
-      console.log(e);
-    });
+  } else {
+    const newComment = {
+      commentedBy: req.user._id,
+      postId: req.body.postId,
+      comment: req.body.comment,
+      postType: req.body.postType,
+      moviePoster: req.body.moviePoster,
+      releaseYear: req.body.releaseYear,
+      genreId: req.body.genreId,
+      overview: req.body.overview,
+      movieTitle: req.body.movieTitle,
+    };
+    Comment.create(newComment)
+      .then((result) => {
+        console.log(result);
+        Post.findByIdAndUpdate(
+          req.body.postId,
+          { $push: { comments: result._id }, $inc: { commentCount: 1 } },
+          { new: true }
+        )
+          .populate("comments")
+          .exec((err, doc) => {
+            if (err) return res.status(422).json(err);
+            return res.status(201).json(doc);
+          });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
 };
 
 exports.deleteComment = (req, res) => {

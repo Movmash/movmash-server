@@ -94,6 +94,7 @@ app.get("/api/v1/movie/upcoming-cover", (req, res) => {
     })
     .catch((e) => {
       console.log(e);
+      console.log("hello");
       res.status(500).json(e.message);
     });
 });
