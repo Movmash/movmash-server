@@ -24,6 +24,13 @@ const commentSchema = new Schema(
       type: ObjectId,
       ref: "Post",
     },
+    postType: String,
+    moviePoster: String,
+    releaseYear: String,
+    genreId: [{ type: Number }],
+    overview: String,
+    movieTitle: String,
+    movieId: String,
   },
   { timestamps: true }
 );

@@ -184,6 +184,15 @@ exports.getSubscribedPost = (req, res) => {
   // pagination require ............................
   Post.find({ postedBy: { $in: [...req.user.followings, req.user._id] } })
     .populate("postedBy", "_id email userName profileImageUrl")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "commentedBy",
+        select: "_id email userName profileImageUrl",
+        model: "User",
+      },
+    })
     .sort("-createdAt")
     .then((posts) => {
       return res.status(200).json(posts);
@@ -227,7 +236,15 @@ exports.postComment = (req, res) => {
           { $push: { comments: result._id }, $inc: { commentCount: 1 } },
           { new: true }
         )
-          .populate("comments")
+          .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+              path: "commentedBy",
+              select: "_id email userName profileImageUrl",
+              model: "User",
+            },
+          })
           .exec((err, doc) => {
             if (err) return res.status(422).json(err);
             return res.status(201).json(doc);
@@ -247,7 +264,9 @@ exports.postComment = (req, res) => {
       genreId: req.body.genreId,
       overview: req.body.overview,
       movieTitle: req.body.movieTitle,
+      movieId: req.body.movieId,
     };
+
     Comment.create(newComment)
       .then((result) => {
         console.log(result);
@@ -256,7 +275,15 @@ exports.postComment = (req, res) => {
           { $push: { comments: result._id }, $inc: { commentCount: 1 } },
           { new: true }
         )
-          .populate("comments")
+          .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+              path: "commentedBy",
+              select: "_id email userName profileImageUrl",
+              model: "User",
+            },
+          })
           .exec((err, doc) => {
             if (err) return res.status(422).json(err);
             return res.status(201).json(doc);
