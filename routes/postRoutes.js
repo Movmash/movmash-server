@@ -207,6 +207,16 @@ exports.getMyPost = (req, res) => {
   console.log(req.user._id);
   Post.find({ postedBy: req.user._id })
     .populate("postedBy", "_id email userName profileImageUrl")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "commentedBy",
+        select: "_id email userName profileImageUrl",
+        model: "User",
+      },
+    })
+    .sort("-createdAt")
     // .select("comments")
     .then((myPost) => {
       return res.status(200).json(myPost);
