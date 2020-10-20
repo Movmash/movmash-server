@@ -3,10 +3,10 @@ const { ObjectId } = mongoose.Schema.Types;
 
 const Schema = mongoose.Schema;
 
-const likedMovieSchema = new Schema(
+const watchlistSchema = new Schema(
   {
     movieId: Number,
-    likedBy: {
+    watchlistedBy: {
       type: ObjectId,
       ref: "User",
     },
@@ -22,4 +22,4 @@ const likedMovieSchema = new Schema(
 );
 
 mongoose.set("useFindAndModify", false);
-module.exports = LikedMovie = mongoose.model("LikedMovie", likedMovieSchema);
+module.exports = Watchlist = mongoose.model("Watchlist", watchlistSchema);

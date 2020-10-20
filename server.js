@@ -15,6 +15,7 @@ const {
   getFollowingsDetails,
   updateUserDetails,
   getUser,
+  getMashUserDetails,
 } = require("./routes/userRoutes.js");
 const mashDBAuth = require("./util/mashDBAuth.js");
 const {
@@ -29,6 +30,7 @@ const {
   likeComment,
   unlikeComment,
   getPostComments,
+  getMashUserPost,
 } = require("./routes/postRoutes.js");
 const {
   markNotificationRead,
@@ -43,6 +45,9 @@ const {
   upcomingCovers,
   movieLists,
   getMovieDetail,
+  checkMovieStatus,
+  addToWatchlist,
+  removeFromWatchlist,
 } = require("./routes/movieRoutes.js");
 //....................................................................................
 
@@ -81,6 +86,11 @@ app.get("/api/v1/home/get-followers", mashDBAuth, getFollowersDetails);
 app.get("/api/v1/home/get-followings", mashDBAuth, getFollowingsDetails);
 app.put("/api/v1/home/update-user-details", mashDBAuth, updateUserDetails);
 app.get("/api/v1/home/get-user", mashDBAuth, getUser);
+app.get(
+  "/api/v1/home/mash-user-details/:userName",
+  mashDBAuth,
+  getMashUserDetails
+);
 //...........................................................................................
 app.get("/api/v1/home/get-notification", mashDBAuth, getAllNotifications);
 app.put(
@@ -101,12 +111,21 @@ app.delete("/api/v1/home/delete-comment/:commentId", mashDBAuth, deleteComment);
 app.put("/api/v1/home/like-comment", mashDBAuth, likeComment);
 app.put("/api/v1/home/unlike-comment", mashDBAuth, unlikeComment);
 app.get("/api/v1/home/get-post-comment", mashDBAuth, getPostComments);
+app.get("/api/v1/home/mash-user-post/:userName", mashDBAuth, getMashUserPost);
 //...........................................................................................
 
 app.post("/api/v1/movie/like-movie", mashDBAuth, likeMovie);
 app.post("/api/v1/movie/dislike-movie", mashDBAuth, dislikeMovie);
 app.post("/api/v1/movie/undo-like-movie", mashDBAuth, undoLikeMovie);
 app.post("/api/v1/movie/undo-dislike-movie", mashDBAuth, undoDislikeMovie);
+app.get("/api/v1/movie/movie-status/:id", mashDBAuth, checkMovieStatus);
+
+app.post("/api/v1/movie/add-to-watchlist", mashDBAuth, addToWatchlist);
+app.post(
+  "/api/v1/movie/remove-from-watchlist",
+  mashDBAuth,
+  removeFromWatchlist
+);
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {

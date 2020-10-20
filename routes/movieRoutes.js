@@ -1,5 +1,6 @@
 const LikedMovie = require("../models/likedMovieModel");
 const DislikedMovie = require("../models/dislikedMovieModel");
+const Watchlist = require("../models/watchListModel");
 
 const requests = require("../requests.js");
 const axios = require("../axios.js");
@@ -7,6 +8,11 @@ exports.likeMovie = (req, res) => {
   const likedMovie = {
     movieId: req.body.movieId,
     likedBy: req.user._id,
+    movieTitle: req.body.movieTitle,
+    overview: req.body.overview,
+    moviePoster: req.body.moviePoster,
+    releaseDate: req.body.releaseDate,
+    genreId: req.body.genreId,
     //movie details also be added
   };
   LikedMovie.create(likedMovie)
@@ -29,6 +35,11 @@ exports.dislikeMovie = (req, res) => {
   const dislikedMovie = {
     movieId: req.body.movieId,
     dislikedBy: req.user._id,
+    movieTitle: req.body.movieTitle,
+    overview: req.body.overview,
+    moviePoster: req.body.moviePoster,
+    releaseDate: req.body.releaseDate,
+    genreId: req.body.genreId,
   };
   DislikedMovie.create(dislikedMovie)
     .then((doc) => {
@@ -75,6 +86,120 @@ exports.undoLikeMovie = (req, res) => {
     });
 };
 
+exports.addToWatchlist = (req, res) => {
+  const watchlist = {
+    movieId: req.body.movieId,
+    watchlistedBy: req.user._id,
+    movieTitle: req.body.movieTitle,
+    overview: req.body.overview,
+    moviePoster: req.body.moviePoster,
+    releaseDate: req.body.releaseDate,
+    genreId: req.body.genreId,
+  };
+  Watchlist.create(watchlist)
+    .then((doc) => {
+      return res.status(201).json({ ...doc });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(201).json({ ...e });
+    });
+};
+exports.removeFromWatchlist = (req, res) => {
+  Watchlist.findOneAndDelete({
+    movieId: req.body.movieId,
+    watchlistedBy: req.user._id,
+  })
+    .then((doc) => {
+      return res.status(201).json({ inWatchlist: false });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+exports.checkMovieStatus = (req, res) => {
+  Watchlist.findOne({ movieId: req.params.id, watchlistedBy: req.user._id })
+    .then((watchlistMovie) => {
+      if (watchlistMovie !== null) {
+        LikedMovie.findOne({ movieId: req.params.id, likedBy: req.user._id })
+          .then((likedDoc) => {
+            if (likedDoc !== null) {
+              return res
+                .status(200)
+                .json({ liked: true, disliked: false, inWatchlist: true });
+            } else if (likedDoc === null) {
+              DislikedMovie.findOne({
+                movieId: req.params.id,
+                dislikedBy: req.user._id,
+              })
+                .then((dislikedDoc) => {
+                  if (dislikedDoc !== null) {
+                    return res
+                      .status(200)
+                      .json({
+                        liked: false,
+                        disliked: true,
+                        inWatchlist: true,
+                      });
+                  } else {
+                    return res
+                      .status(200)
+                      .json({
+                        liked: false,
+                        disliked: false,
+                        inWatchlist: true,
+                      });
+                  }
+                })
+                .catch((e) => {
+                  console.log(e);
+                });
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } else {
+        LikedMovie.findOne({ movieId: req.params.id, likedBy: req.user._id })
+          .then((likedDoc) => {
+            if (likedDoc !== null) {
+              return res
+                .status(200)
+                .json({ liked: true, disliked: false, inWatchlist: false });
+            } else if (likedDoc === null) {
+              DislikedMovie.findOne({
+                movieId: req.params.id,
+                dislikedBy: req.user._id,
+              })
+                .then((dislikedDoc) => {
+                  if (dislikedDoc !== null) {
+                    return res.status(200).json({
+                      liked: false,
+                      disliked: true,
+                      inWatchlist: false,
+                    });
+                  } else {
+                    return res.status(200).json({
+                      liked: false,
+                      disliked: false,
+                      inWatchlist: false,
+                    });
+                  }
+                })
+                .catch((e) => {
+                  console.log(e);
+                });
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+    })
+    .catch((e) => console.log(e));
+};
+
 exports.searchMovie = (req, res) => {
   const query = req.query.query;
   axios
@@ -103,30 +228,43 @@ exports.getMovieDetail = (req, res) => {
     });
 };
 exports.upcomingCovers = (req, res) => {
-  let results = [];
-  let promises = [];
+  // let results = [];
+  // let promises = [];
+  // axios
+  //   .get(requests.fetchUpcomingMovies)
+  //   .then((response) => {
+  //     results = [...response.data.results.slice(0, 5)]; //onliy p can change the difference
+  //     for (let i = 0; i < results.length; i++) {
+  //       promises.push(
+  //         axios
+  //           .get(
+  //             `https://api.themoviedb.org/3/movie/${results[i].id}/videos?api_key=${process.env.API_KEY}&language=en-US`
+  //           )
+  //           .then((response) => {
+  //             results[i].trailers = response.data.results;
+  //           })
+  //           .catch((e) => {
+  //             console.log(e);
+  //             return res.status(500).json(e.message);
+  //           })
+  //       );
+  //     }
+  //     Promise.all(promises).then(() => {
+  //       return res.status(200).json(results);
+  //     });
+  //   })
+  //   .catch((e) => {
+  //     console.log(e);
+  //     console.log("hello");
+  //     return res.status(500).json(e.message);
+  //   });
+
   axios
     .get(requests.fetchUpcomingMovies)
     .then((response) => {
       results = [...response.data.results.slice(0, 5)]; //onliy p can change the difference
-      for (let i = 0; i < results.length; i++) {
-        promises.push(
-          axios
-            .get(
-              `https://api.themoviedb.org/3/movie/${results[i].id}/videos?api_key=${process.env.API_KEY}&language=en-US`
-            )
-            .then((response) => {
-              results[i].trailers = response.data.results;
-            })
-            .catch((e) => {
-              console.log(e);
-              return res.status(500).json(e.message);
-            })
-        );
-      }
-      Promise.all(promises).then(() => {
-        return res.status(200).json(results);
-      });
+
+      return res.status(200).json(results);
     })
     .catch((e) => {
       console.log(e);

@@ -180,6 +180,25 @@ exports.getUserDetails = (req, res) => {
     });
 };
 
+exports.getMashUserDetails = (req, res) => {
+  User.findOne({ userName: req.params.userName })
+    .select("-password")
+    .then((user) => {
+      // Post.find({ postedBy: user._id })
+      //   .populate("postedBy", "_id userName email profileImageUrl")
+
+      //   .exec((err, posts) => {
+      //     if (err) return res.status(422).json({ error: err });
+      //     return res.status(200).json({ user, posts });
+      //   });
+      return res.status(200).json(user);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(503).json(e);
+    });
+};
+
 exports.getUser = (req, res) => {
   User.findOne({ email: req.user.email })
     .select("-password")
@@ -245,12 +264,13 @@ exports.followUser = (req, res) => {
           console.log(err);
           return res.status(503).json(err);
         }
-        return res.status(201).json(doc);
+        return res.status(201).json(result);
       });
   });
 };
 
 exports.unfollowUser = (req, res) => {
+  console.log("heelll yyaa");
   User.findByIdAndUpdate(
     req.body.unfollowId,
     { $pull: { followers: req.user._id }, $inc: { followersCount: -1 } },
@@ -267,7 +287,7 @@ exports.unfollowUser = (req, res) => {
       )
         .select("-password")
         .then((result) => {
-          return res.status(201).json(result);
+          return res.status(201).json(doc);
         })
         .catch((e) => {
           return res.status(422).json({ error: err });

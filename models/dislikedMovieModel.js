@@ -10,6 +10,11 @@ const dislikedMovieSchema = new Schema(
       type: ObjectId,
       ref: "User",
     },
+    movieTitle: String,
+    overview: String,
+    moviePoster: String,
+    releaseDate: String,
+    genreId: [{ type: Number }],
   },
   {
     timestamps: true,

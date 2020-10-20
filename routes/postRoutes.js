@@ -370,3 +370,34 @@ exports.getPostComments = (req, res) => {
       return res.status(422).json(e);
     });
 };
+
+exports.getMashUserPost = (req, res) => {
+  userName = req.params.userName;
+  // console.log(userId);
+  User.findOne({ userName: userName })
+    .then((user) => {
+      Post.find({ postedBy: user._id })
+        .sort("-createdAt")
+        .populate("postedBy", "_id email userName profileImageUrl")
+        .populate({
+          path: "comments",
+          model: "Comment",
+          populate: {
+            path: "commentedBy",
+            select: "_id email userName profileImageUrl",
+            model: "User",
+          },
+        })
+        .then((post) => {
+          return res.status(200).json(post);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log("user Not found");
+      console.log(e);
+    });
+};
