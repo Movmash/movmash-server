@@ -49,15 +49,22 @@ const {
   addToWatchlist,
   removeFromWatchlist,
 } = require("./routes/movieRoutes.js");
+const {
+  postUserReview,
+  movieRatedStatus,
+} = require("./routes/reviewRoutes.js");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
 app.use(express.json());
-mongoose.connect(process.env.DB_URI, {
-  useCreateIndex: true,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose
+  .connect(process.env.DB_URI, {
+    // useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected"))
+  .catch((e) => console.log(e));
 
 //....................................................................................
 
@@ -126,12 +133,20 @@ app.post(
   mashDBAuth,
   removeFromWatchlist
 );
+app.get(
+  "/api/v1/movie/movie-rated-status/:movieId",
+  mashDBAuth,
+  movieRatedStatus
+);
+app.post("/api/v1/movie/post-user-review", mashDBAuth, postUserReview);
+
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
   console.log(`the server is started at port ${port}`);
 });
 
+// server.timeout = 0;
 // const posts = db.collection("posts");
 // const changeStream = posts.watch();
 
