@@ -53,6 +53,7 @@ const {
   postUserReview,
   movieRatedStatus,
 } = require("./routes/reviewRoutes.js");
+const { getAllUserRooms } = require("./routes/chatRoutes.js");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -139,7 +140,7 @@ app.get(
   movieRatedStatus
 );
 app.post("/api/v1/movie/post-user-review", mashDBAuth, postUserReview);
-
+app.get("/api/v1/home/get-user-rooms", mashDBAuth, getAllUserRooms);
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
