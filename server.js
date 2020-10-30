@@ -1,10 +1,16 @@
+const http = require("http");
 const express = require("express");
+
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
+const socketio = require("socket.io");
+const server = http.createServer(app);
+const io = socketio(server);
 require("dotenv").config();
 // const requests = require("./requests.js");
 // const axios = require("./axios.js");
+const Conversation = require("./models/conversationModel");
 const {
   signup,
   login,
@@ -53,7 +59,7 @@ const {
   postUserReview,
   movieRatedStatus,
 } = require("./routes/reviewRoutes.js");
-const { getAllUserRooms } = require("./routes/chatRoutes.js");
+const { getAllUserRooms, getRoomsMessages } = require("./routes/chatRoutes.js");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -141,9 +147,77 @@ app.get(
 );
 app.post("/api/v1/movie/post-user-review", mashDBAuth, postUserReview);
 app.get("/api/v1/home/get-user-rooms", mashDBAuth, getAllUserRooms);
+app.get(
+  "/api/v1/home/get-rooms-messages/:roomId",
+  mashDBAuth,
+  getRoomsMessages
+);
+//.................................... web sockets .........................................
+
+io.on("connection", (socket) => {
+  // ;
+  // console.log(socket.handshake.query.id);
+
+  console.log(socket.handshake.query.id);
+  socket.join(socket.handshake.query.id);
+
+  console.log("new connection have build");
+  // socket.on("join-chat", ({ userId }) => {
+  //   // console.log(data);
+  //   socket.join(userId);
+  //   console.log(userId);
+  // });
+
+  socket.on("sendMessage", (message) => {
+    console.log(message);
+    try {
+      let chat = new Conversation(message);
+
+      chat.save((err, doc) => {
+        if (err) return res.status(500).json({ success: false, err });
+
+        Conversation.find({ _id: doc._id })
+          .populate("sender", "userName profileImageUrl fullName")
+          .populate("recipient", "userName profileImageUrl fullName")
+          .then((doc) => {
+            console.log(message.roomId);
+            return io
+              .to(message.sender)
+              .to(message.recipient)
+              .emit("message", doc);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+        // .exec((err, doc) => {
+        //   if (doc.roomId !== undefined) {
+        //     console.log(doc);
+        //     return io.to(doc.roomId).emit("message", doc);
+        //   } else {
+        //     console.log(doc);
+        //   }
+        // });
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    // Conversation.create(message)
+    //   .populate("sender")
+    //   .then((doc) => {
+    //     console.log(doc);
+    //   })
+    //   .catch((e) => {
+    //     console.log(e);
+    //   });
+  });
+  socket.on("disconnect", () => {
+    console.log("disconnected user");
+  });
+});
+
 const port = process.env.PORT || 8000;
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`the server is started at port ${port}`);
 });
 
