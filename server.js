@@ -1,6 +1,11 @@
 const http = require("http");
 const express = require("express");
-
+const {
+  addUser,
+  removeUser,
+  getUserDetail,
+  getUsersInRoom,
+} = require("./util/userManagement");
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -210,8 +215,52 @@ io.on("connection", (socket) => {
     //     console.log(e);
     //   });
   });
+
+  socket.on("join-party", ({ roomCode, userName }) => {
+    console.log(roomCode, userName);
+    const { user } = addUser({ id: socket.id, room: roomCode, name: userName });
+    socket.join(user.room);
+    socket.emit("party-message", {
+      user: "admin",
+      text: `welcome, ${user.name} !!!`,
+      type: "greet",
+    });
+    socket.broadcast.to(user.room).emit("party-message", {
+      user: "admin",
+      text: `${user.name} has joined!`,
+      type: "greet",
+    });
+    // io.to(roomCode).emit("roomData", {
+    //   room: user.room,
+    //   users: getUsersInRoom(user.room),
+    // });
+  });
+  socket.on("send-party-message", ({ roomCode, userName, message }) => {
+    console.log(socket.id);
+    const user = getUserDetail(socket.id);
+    //  const user = getUser(socket.id);
+    // console.log(user);
+    io.to(user.room).emit("party-message", {
+      user: user.name,
+      text: message,
+      type: "user",
+    });
+    //  io.to(user.room).emit("roomData", {
+    //    room: user.room,
+    //    text: message,
+    //  });
+    //  callback();
+  });
   socket.on("disconnect", () => {
     console.log("disconnected user");
+    const user = removeUser(socket.id);
+    if (user) {
+      io.to(user.room).emit("party-message", {
+        user: "admin",
+        text: `${user.name} has left`,
+        type: "greet",
+      });
+    }
   });
 });
 
