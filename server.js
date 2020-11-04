@@ -5,6 +5,7 @@ const {
   removeUser,
   getUserDetail,
   getUsersInRoom,
+  getHostDetail,
 } = require("./util/userManagement");
 const app = express();
 const cors = require("cors");
@@ -15,6 +16,7 @@ const io = socketio(server);
 require("dotenv").config();
 // const requests = require("./requests.js");
 // const axios = require("./axios.js");
+const LiveShow = require("./models/liveShowModel");
 const Conversation = require("./models/conversationModel");
 const {
   signup,
@@ -65,6 +67,10 @@ const {
   movieRatedStatus,
 } = require("./routes/reviewRoutes.js");
 const { getAllUserRooms, getRoomsMessages } = require("./routes/chatRoutes.js");
+const {
+  getLiveShowDetails,
+  createLiveShow,
+} = require("./routes/liveShowRoutes");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -157,8 +163,22 @@ app.get(
   mashDBAuth,
   getRoomsMessages
 );
-//.................................... web sockets .........................................
 
+//..................
+
+app.post("/api/v1/live/create-live-show", mashDBAuth, createLiveShow);
+
+app.get(
+  "/api/v1/live/get-live-show-details/:roomCode",
+  mashDBAuth,
+  getLiveShowDetails
+);
+
+//.................................... web sockets .........................................
+const connections = [];
+let roomcode;
+let rooms = [];
+let userrooms = {};
 io.on("connection", (socket) => {
   // ;
   // console.log(socket.handshake.query.id);
@@ -216,20 +236,151 @@ io.on("connection", (socket) => {
     //   });
   });
 
-  socket.on("join-party", ({ roomCode, userName }) => {
+  socket.on("join-party", ({ roomCode, userName, userId }) => {
     console.log(roomCode, userName);
-    const { user } = addUser({ id: socket.id, room: roomCode, name: userName });
-    socket.join(user.room);
-    socket.emit("party-message", {
-      user: "admin",
-      text: `welcome, ${user.name} !!!`,
-      type: "greet",
-    });
-    socket.broadcast.to(user.room).emit("party-message", {
-      user: "admin",
-      text: `${user.name} has joined!`,
-      type: "greet",
-    });
+    LiveShow.findOne({ roomCode })
+      .then((data) => {
+        console.log(data);
+        // console.log(userId === data.host.toString());
+
+        const { user } = addUser({
+          id: socket.id,
+          room: roomCode,
+          name: userName,
+          host: userId === data.host.toString(),
+        });
+        socket.join(user.room);
+        socket.emit("party-message", {
+          user: "admin",
+          text: `welcome, ${user.name} !!!`,
+          type: "greet",
+        });
+        socket.broadcast.to(user.room).emit("party-message", {
+          user: "admin",
+          text: `${user.name} has joined!`,
+          type: "greet",
+        });
+        let host = null;
+        // let init = false;
+        // const us = getHostDetail(roomCode);
+        // console.log(us);
+        if (userId === data.host.toString()) {
+          // if the user is host
+          host = socket.id;
+          // init=true;
+          socket.emit("set-host");
+        } else {
+          host = getHostDetail(roomCode).id;
+          console.log(host);
+        }
+
+        if (socket.id !== host) {
+          console.log("call the host " + host);
+          // console.log("get data");
+          // socket.broadcast.to(host).emit("get-data");
+          setTimeout(() => {
+            socket.broadcast.to(host).emit("get-data", { caller: socket.id });
+          }, 1000);
+        } else {
+          console.log("I am the host");
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    // roomnum = roomCode;
+    // const tel = ;
+    // console.log(tel);
+    // var host = null;
+    // var init = false;
+    // if (getUserDetail(socket.id) === undefined) {
+    //   socket.send(socket.id);
+    //   host = socket.id;
+    //   init = true;
+    //   console.log("set-host");
+    //   socket.emit("set-host");
+    // } else {
+    //   console.log(socket.roomnum);
+    //   // host = io.sockets.adapter.rooms[socket.roomnum].host;
+    // }
+    // if (init) {
+    //   // io.sockets.adapter.rooms[socket.roomnum].host = host;
+    // }
+
+    // const { user } = addUser({
+    //   id: socket.id,
+    //   room: roomCode,
+    //   name: userName,
+    //   host: true,
+    // });
+    // socket.join(user.room);
+    // socket.emit("party-message", {
+    //   user: "admin",
+    //   text: `welcome, ${user.name} !!!`,
+    //   type: "greet",
+    // });
+    // socket.broadcast.to(user.room).emit("party-message", {
+    //   user: "admin",
+    //   text: `${user.name} has joined!`,
+    //   type: "greet",
+    // });
+
+    // if (socket.id !== host) {
+    //   console.log("call the host " + host);
+
+    //   setTimeout(() => {
+    //     socket.broadcast.to(host).emit("get-data");
+    //   }, 1000);
+
+    //   // io.sockets.adapter.rooms[socket.roomnum].users.push(sock)
+    // } else {
+    //   console.log("I am the host");
+    // }
+
+    //.........................
+    // connections.push(socket);
+    // console.log("connected: %s sockets connected", connections.length);
+    // socket.roomnum = roomCode;
+    // console.log("1", socket.roomnum);
+    // userrooms[socket.id] = roomCode;
+    // var host = null;
+    // var init = false;
+    // if (socket.roomnum == null || socket.roomnum == "") {
+    //   socket.roomnum = "1";
+    //   userrooms[socket.id] = "1";
+    // }
+
+    // if (!rooms.includes(socket.roomnum)) {
+    //   rooms.push(socket.roomnum);
+    // }
+
+    // if (io.sockets.adapter.rooms[socket.roomnum] === undefined) {
+    //   socket.send(socket.id);
+    //   host = socket.id;
+    //   init = true;
+    //   console.log("set-host");
+    //   socket.emit("set-host");
+    // } else {
+    //   console.log(socket.roomnum);
+    //   host = io.sockets.adapter.rooms[socket.roomnum].host;
+    // }
+    // socket.join(socket.roomnum);
+
+    // if (init) {
+    //   io.sockets.adapter.rooms[socket.roomnum].host = host;
+    // }
+
+    // if (socket.id !== host) {
+    //   console.log("call the host " + host);
+
+    //   setTimeout(() => {
+    //     socket.broadcast.to(host).emit("get-data");
+    //   }, 1000);
+
+    //   // io.sockets.adapter.rooms[socket.roomnum].users.push(sock)
+    // } else {
+    //   console.log("I am the host");
+    // }
     // io.to(roomCode).emit("roomData", {
     //   room: user.room,
     //   users: getUsersInRoom(user.room),
@@ -251,6 +402,159 @@ io.on("connection", (socket) => {
     //  });
     //  callback();
   });
+
+  // socket.on("new-room", (data, callback) => {
+  //   connections.push(socket);
+  //   console.log("connected: %s sockets connected", connections.length);
+  //   socket.roomnum = data;
+  //   console.log(socket.roomnum);
+  //   userrooms[socket.id] = data;
+  //   var host = null;
+  //   var init = false;
+  //   if (socket.roomnum == null || socket.roomnum == "") {
+  //     socket.roomnum = "1";
+  //     userrooms[socket.id] = "1";
+  //   }
+
+  //   if (!rooms.includes(socket.roomnum)) {
+  //     rooms.push(socket.roomnum);
+  //   }
+
+  //   if (io.sockets.adapter.rooms[socket.roomnum] === undefined) {
+  //     socket.send(socket.id);
+  //     host = socket.id;
+  //     init = true;
+  //     console.log("set-host");
+  //     socket.emit("set-host");
+  //   } else {
+  //     console.log(socket.roomnum);
+  //     host = io.sockets.adapter.rooms[socket.roomnum].host;
+  //   }
+  //   socket.join(socket.roomnum);
+
+  //   if (init) {
+  //     io.sockets.adapter.rooms[socket.roomnum].host = host;
+  //   }
+
+  //   if (socket.id !== host) {
+  //     console.log("call the host " + host);
+
+  //     setTimeout(() => {
+  //       socket.broadcast.to(host).emit("get-data");
+  //     }, 1000);
+
+  //     // io.sockets.adapter.rooms[socket.roomnum].users.push(sock)
+  //   } else {
+  //     console.log("I am the host");
+  //   }
+  // });
+
+  //...........................................
+  socket.on("play-video", (data) => {
+    var roomnum = data.room;
+    console.log("1");
+
+    socket.to(roomnum).broadcast.emit("play-video-client");
+  });
+
+  socket.on("play-other", (data) => {
+    var roomnum = data.roomCode;
+    console.log("2");
+    socket.to(roomnum).broadcast.emit("just-play");
+  });
+  socket.on("pause-other", (data) => {
+    var roomnum = data.roomCode;
+    console.log("3");
+    socket.to(roomnum).broadcast.emit("just-pause");
+  });
+  socket.on("seek-other", (data) => {
+    var roomnum = data.roomCode;
+    var currTime = data.time;
+    // var state = data.state;
+    console.log("4");
+    socket.to(roomnum).broadcast.emit("just-seek", {
+      time: currTime,
+      // state: state
+    });
+  });
+  socket.on("sync-video", (data) => {
+    var roomnum = data.roomCode;
+    var currTime = data.time;
+    var state = data.state;
+    console.log("4");
+    socket.to(roomnum).broadcast.emit("sync-video-client", {
+      time: currTime,
+      state: state,
+    });
+  });
+  //.........................
+  socket.on("sync-the-host", (data) => {
+    console.log("hello");
+    console.log(data);
+    socket.to(data.caller).broadcast.emit("sync-the-video-with-host", {
+      time: data.time,
+      state: data.state,
+    });
+  });
+  socket.on("sync-the-host-button", (data) => {
+    console.log("hello");
+    socket.to(data.roomCode).broadcast.emit("sync-the-video-with-host-button", {
+      time: data.time,
+      state: data.state,
+    });
+  });
+  //........................
+  socket.on("sync-host", (data) => {
+    if (getHostDetail(data.roomCode) !== undefined) {
+      console.log("sync-host");
+      // var host = io.sockets.adapter.rooms[socket.roomnum].host;
+      let host = getHostDetail(data.roomCode).id;
+      // console.log(host)
+      if (socket.id !== host) {
+        console.log("is host");
+        socket.broadcast.to(host).emit("get-data", { caller: socket.id });
+      } else {
+        console.log("not host");
+        socket.emit("sync-host-server");
+      }
+    }
+  });
+  socket.on("get-host-data", (data) => {
+    if (getHostDetail(data.roomCode) !== undefined) {
+      // var roomnum = data.room;
+      // var host = io.sockets.adapter.rooms[roomnum].host;
+      let host = getHostDetail(data.roomCode);
+      if (data.currTime === undefined) {
+        let caller = socket.id;
+        socket.broadcast.to(host).emit("get-player-data", {
+          room: data.roomCode,
+          caller: caller,
+        });
+      } else {
+        var caller = data.caller;
+
+        socket.broadcast.to(caller).emit("compareHost", data);
+      }
+    }
+  });
+  socket.on("change host", (data) => {
+    if (io.sockets.adapter.rooms[socket.roomnum] !== undefined) {
+      var roomnum = data.room;
+      var newHost = socket.id;
+      var currHost = io.sockets.adapter.rooms[socket.roomnum].host;
+
+      if (newHost !== currHost) {
+        socket.broadcast.to(currHost).emit("unSetHost");
+
+        io.sockets.adapter.rooms[socket.roomnum].host = newHost;
+
+        socket.emit("set-host");
+
+        // io.sockets.adapter.rooms[socket.roomnum].hostName = socket
+      }
+    }
+  });
+  //...........................................
   socket.on("disconnect", () => {
     console.log("disconnected user");
     const user = removeUser(socket.id);
