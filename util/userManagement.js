@@ -13,7 +13,7 @@ const addUser = ({ id, name, room, host }) => {
   const user = { id, name, room, host };
 
   users.push(user);
-
+  console.log(user);
   return { user };
 };
 

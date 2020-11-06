@@ -70,6 +70,9 @@ const { getAllUserRooms, getRoomsMessages } = require("./routes/chatRoutes.js");
 const {
   getLiveShowDetails,
   createLiveShow,
+  getAllLiveShow,
+  getGenreLiveShow,
+  getFollowingsLiveShow,
 } = require("./routes/liveShowRoutes");
 //....................................................................................
 
@@ -173,12 +176,19 @@ app.get(
   mashDBAuth,
   getLiveShowDetails
 );
-
+app.get(
+  "/api/v1/live/get-genre-live-show/:genre",
+  mashDBAuth,
+  getGenreLiveShow
+);
+app.get("/api/v1/live/get-all-live-show", mashDBAuth, getAllLiveShow);
+app.get(
+  "/api/v1/live/get-followings-live-show",
+  mashDBAuth,
+  getFollowingsLiveShow
+);
 //.................................... web sockets .........................................
-const connections = [];
-let roomcode;
-let rooms = [];
-let userrooms = {};
+
 io.on("connection", (socket) => {
   // ;
   // console.log(socket.handshake.query.id);
@@ -238,7 +248,11 @@ io.on("connection", (socket) => {
 
   socket.on("join-party", ({ roomCode, userName, userId }) => {
     console.log(roomCode, userName);
-    LiveShow.findOne({ roomCode })
+    LiveShow.findOneAndUpdate(
+      { roomCode },
+      { $inc: { memberNumber: 1 } },
+      { new: true }
+    )
       .then((data) => {
         console.log(data);
         // console.log(userId === data.host.toString());
@@ -270,6 +284,7 @@ io.on("connection", (socket) => {
           // init=true;
           socket.emit("set-host");
         } else {
+          // can check if host is not available the emit something .....................................................................................................................
           host = getHostDetail(roomCode).id;
           console.log(host);
         }
@@ -554,16 +569,57 @@ io.on("connection", (socket) => {
       }
     }
   });
+  socket.on("leaving-party", () => {
+    console.log("leaving-party");
+    const userDetail = getUserDetail(socket.id);
+    console.log(userDetail);
+    if (userDetail !== undefined) {
+      LiveShow.findOneAndUpdate(
+        { roomCode: userDetail.room },
+        { $inc: { memberNumber: -1 } },
+        { new: true }
+      )
+        .then((data) => {
+          const user = removeUser(socket.id);
+          console.log(data);
+          if (user) {
+            io.to(user.room).emit("party-message", {
+              user: "admin",
+              text: `${user.name} has left`,
+              type: "greet",
+            });
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  });
   //...........................................
   socket.on("disconnect", () => {
     console.log("disconnected user");
-    const user = removeUser(socket.id);
-    if (user) {
-      io.to(user.room).emit("party-message", {
-        user: "admin",
-        text: `${user.name} has left`,
-        type: "greet",
-      });
+    const userDetail = getUserDetail(socket.id);
+    console.log(userDetail);
+    if (userDetail !== undefined) {
+      LiveShow.findOneAndUpdate(
+        { roomCode: userDetail.room },
+        { $inc: { memberNumber: -1 } },
+        { new: true }
+      )
+        .then((data) => {
+          const user = removeUser(socket.id);
+          console.log(data);
+          if (user) {
+            io.to(user.room).emit("party-message", {
+              user: "admin",
+              text: `${user.name} has left`,
+              type: "greet",
+            });
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
     }
   });
 });

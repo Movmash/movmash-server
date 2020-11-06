@@ -11,9 +11,17 @@ const liveShowSchema = new Schema({
   description: String,
   roomCode: String,
   movieId: Number,
-  posterUrl: String,
+  posterUrl: {
+    type: String,
+    default:
+      "https://cdn.pastemagazine.com/www/articles/2016/01/21/ProphetEW_Main.jpg",
+  },
   privacy: String,
   roomTitle: String,
+  memberNumber: {
+    type: Number,
+  },
+  genre: String,
 });
 
 mongoose.set("useFindAndModify", false);
