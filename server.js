@@ -295,7 +295,7 @@ io.on("connection", (socket) => {
           // socket.broadcast.to(host).emit("get-data");
           setTimeout(() => {
             socket.broadcast.to(host).emit("get-data", { caller: socket.id });
-          }, 1000);
+          }, 2000);
         } else {
           console.log("I am the host");
         }

@@ -22,6 +22,7 @@ const liveShowSchema = new Schema({
     type: Number,
   },
   genre: String,
+  videoUrl: String,
 });
 
 mongoose.set("useFindAndModify", false);
