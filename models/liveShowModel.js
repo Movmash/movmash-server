@@ -20,6 +20,7 @@ const liveShowSchema = new Schema({
   roomTitle: String,
   memberNumber: {
     type: Number,
+    default: 0,
   },
   genre: String,
   videoUrl: String,

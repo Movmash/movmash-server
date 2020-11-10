@@ -1,7 +1,8 @@
 const LikedMovie = require("../models/likedMovieModel");
 const DislikedMovie = require("../models/dislikedMovieModel");
 const Watchlist = require("../models/watchListModel");
-
+const { genreConverter } = require("../util/genreConverter");
+const UserGenrePreference = require("../models/userGenrePreferenceModel");
 const requests = require("../requests.js");
 const axios = require("../axios.js");
 exports.likeMovie = (req, res) => {
@@ -15,12 +16,59 @@ exports.likeMovie = (req, res) => {
     genreId: req.body.genreId,
     //movie details also be added
   };
+
   LikedMovie.create(likedMovie)
     .then((doc) => {
       DislikedMovie.findOneAndDelete({
         movieId: req.body.movieId,
         dislikedBy: req.user._id,
       }).then((data) => {
+        const genreName = genreConverter(doc.genreId);
+        const updatedGenre = { $inc: {} };
+        for (let i = 0; i < genreName.length; i++) {
+          updatedGenre.$inc[genreName[i]] = 1;
+        }
+        console.log(updatedGenre);
+        // UserGenrePreference.findOne({ user: req.user._id }).then((user) => {
+        //   if (!user) {
+        //     UserGenrePreference.create({ user: req.user._id })
+        //       .then((pref) => {
+        //         UserGenrePreference.findByIdAndUpdate(pref._id, updatedGenre,{new:true})
+        //           .then((updated) => {
+        //             console.log(updated);
+        //           })
+        //           .catch((e) => {
+        //             console.log(e);
+        //           });
+        //       })
+        //       .catch((e) => {
+        //         console.log(e);
+        //       });
+        //   } else {
+        //     UserGenrePreference.findOneAndUpdate(
+        //       { user: req.user._id },
+        //       updatedGenre,
+        //       { new: true }
+        //     )
+        //       .then((pref) => {
+        //         console.log(pref);
+        //       })
+        //       .catch((e) => {
+        //         console.log(e);
+        //       });
+        //   }
+        // });
+        UserGenrePreference.findOneAndUpdate(
+          { user: req.user._id },
+          updatedGenre,
+          { new: true, upsert: true }
+        )
+          .then((pref) => {
+            console.log(pref);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
         return res.status(201).json({ liked: true, disliked: false });
       });
     })
@@ -47,6 +95,27 @@ exports.dislikeMovie = (req, res) => {
         movieId: req.body.movieId,
         likedBy: req.user._id,
       }).then((data) => {
+        const genreName = genreConverter(doc.genreId);
+        const updatedGenre = { $inc: {} };
+        for (let i = 0; i < genreName.length; i++) {
+          updatedGenre.$inc[genreName[i]] = -1;
+        }
+        console.log(updatedGenre);
+        UserGenrePreference.findOneAndUpdate(
+          { user: req.user._id },
+          updatedGenre,
+          {
+            new: true,
+            upsert: true,
+          }
+        )
+          .then((pref) => {
+            console.log(pref);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+
         return res.json({ liked: false, disliked: true });
       });
       //   return res.status(201).send(doc);
@@ -64,6 +133,26 @@ exports.undoDislikeMovie = (req, res) => {
     dislikedBy: req.user._id,
   })
     .then((doc) => {
+      const genreName = genreConverter(doc.genreId);
+      const updatedGenre = { $inc: {} };
+      for (let i = 0; i < genreName.length; i++) {
+        updatedGenre.$inc[genreName[i]] = 1;
+      }
+      console.log(updatedGenre);
+      UserGenrePreference.findOneAndUpdate(
+        { user: req.user._id },
+        updatedGenre,
+        {
+          new: true,
+          upsert: true,
+        }
+      )
+        .then((pref) => {
+          console.log(pref);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
       return res.status(201).json({ disliked: false });
     })
     .catch((e) => {
@@ -78,6 +167,26 @@ exports.undoLikeMovie = (req, res) => {
     likedBy: req.user._id,
   })
     .then((doc) => {
+      const genreName = genreConverter(doc.genreId);
+      const updatedGenre = { $inc: {} };
+      for (let i = 0; i < genreName.length; i++) {
+        updatedGenre.$inc[genreName[i]] = -1;
+      }
+      console.log(updatedGenre);
+      UserGenrePreference.findOneAndUpdate(
+        { user: req.user._id },
+        updatedGenre,
+        {
+          new: true,
+          upsert: true,
+        }
+      )
+        .then((pref) => {
+          console.log(pref);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
       return res.status(201).json({ liked: false });
     })
     .catch((e) => {
@@ -135,21 +244,17 @@ exports.checkMovieStatus = (req, res) => {
               })
                 .then((dislikedDoc) => {
                   if (dislikedDoc !== null) {
-                    return res
-                      .status(200)
-                      .json({
-                        liked: false,
-                        disliked: true,
-                        inWatchlist: true,
-                      });
+                    return res.status(200).json({
+                      liked: false,
+                      disliked: true,
+                      inWatchlist: true,
+                    });
                   } else {
-                    return res
-                      .status(200)
-                      .json({
-                        liked: false,
-                        disliked: false,
-                        inWatchlist: true,
-                      });
+                    return res.status(200).json({
+                      liked: false,
+                      disliked: false,
+                      inWatchlist: true,
+                    });
                   }
                 })
                 .catch((e) => {

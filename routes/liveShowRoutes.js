@@ -69,13 +69,14 @@ exports.createLiveShow = (req, res) => {
     genre: req.body.genre,
     memberNumber: 0,
     videoUrl:
-      req.body.videoUrl === undefined
+      req.body.videoUrl === ""
         ? "https://www.youtube.com/watch?v=vuQR6Mj64jQ"
         : req.body.videoUrl,
   };
   console.log(liveShowDetail);
   LiveShow.findOneAndUpdate({ host: req.user._id }, liveShowDetail, {
     upsert: true,
+    setDefaultsOnInsert: true,
     new: true,
   })
     .then((data) => {

@@ -74,6 +74,7 @@ const {
   getGenreLiveShow,
   getFollowingsLiveShow,
 } = require("./routes/liveShowRoutes");
+const { getUserRecommendation } = require("./routes/exploreRoutes");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -187,6 +188,14 @@ app.get(
   mashDBAuth,
   getFollowingsLiveShow
 );
+//...
+
+app.get(
+  "/api/v1/explore/get-user-recommendation",
+  mashDBAuth,
+  getUserRecommendation
+);
+
 //.................................... web sockets .........................................
 
 io.on("connection", (socket) => {
@@ -469,25 +478,27 @@ io.on("connection", (socket) => {
     var roomnum = data.room;
     console.log("1");
 
-    socket.to(roomnum).broadcast.emit("play-video-client");
+    socket.broadcast.to(roomnum).emit("play-video-client");
   });
 
   socket.on("play-other", (data) => {
     var roomnum = data.roomCode;
     console.log("2");
-    socket.to(roomnum).broadcast.emit("just-play");
+    console.log(roomnum);
+    socket.broadcast.to(roomnum).emit("just-play");
   });
   socket.on("pause-other", (data) => {
     var roomnum = data.roomCode;
     console.log("3");
-    socket.to(roomnum).broadcast.emit("just-pause");
+    console.log(roomnum);
+    socket.broadcast.to(roomnum).emit("just-pause");
   });
   socket.on("seek-other", (data) => {
     var roomnum = data.roomCode;
     var currTime = data.time;
     // var state = data.state;
     console.log("4");
-    socket.to(roomnum).broadcast.emit("just-seek", {
+    socket.broadcast.to(roomnum).emit("just-seek", {
       time: currTime,
       // state: state
     });
@@ -497,7 +508,7 @@ io.on("connection", (socket) => {
     var currTime = data.time;
     var state = data.state;
     console.log("4");
-    socket.to(roomnum).broadcast.emit("sync-video-client", {
+    socket.broadcast.to(roomnum).emit("sync-video-client", {
       time: currTime,
       state: state,
     });
@@ -506,14 +517,14 @@ io.on("connection", (socket) => {
   socket.on("sync-the-host", (data) => {
     console.log("hello");
     console.log(data);
-    socket.to(data.caller).broadcast.emit("sync-the-video-with-host", {
+    socket.broadcast.to(data.caller).emit("sync-the-video-with-host", {
       time: data.time,
       state: data.state,
     });
   });
   socket.on("sync-the-host-button", (data) => {
     console.log("hello");
-    socket.to(data.roomCode).broadcast.emit("sync-the-video-with-host-button", {
+    socket.broadcast.to(data.roomCode).emit("sync-the-video-with-host-button", {
       time: data.time,
       state: data.state,
     });
@@ -583,11 +594,17 @@ io.on("connection", (socket) => {
           const user = removeUser(socket.id);
           console.log(data);
           if (user) {
-            io.to(user.room).emit("party-message", {
+            socket.broadcast.to(user.room).emit("party-message", {
               user: "admin",
               text: `${user.name} has left`,
               type: "greet",
             });
+            socket.leave(user.room);
+            // io.to(user.room).emit("party-message", {
+            //   user: "admin",
+            //   text: `${user.name} has left`,
+            //   type: "greet",
+            // });
           }
         })
         .catch((e) => {
@@ -615,6 +632,7 @@ io.on("connection", (socket) => {
               text: `${user.name} has left`,
               type: "greet",
             });
+            socket.leave(user.room);
           }
         })
         .catch((e) => {
