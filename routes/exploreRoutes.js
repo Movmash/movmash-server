@@ -249,12 +249,24 @@ exports.getUserRecommendation = (req, res) => {
     });
 };
 
-exports.getMovieListRecommendation = (req, res) => {};
-
-exports.getSuggestMeRecommendation = (req, res) => {
-  // User.findById(req.user._id).then(user => {
-  //   Pos
-  // })
+exports.getExplorePosts = (req, res) => {
+  // pagination require ............................
+  Post.find({ postType: "explore" })
+    .populate("postedBy", "_id email userName profileImageUrl")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "commentedBy",
+        select: "_id email userName profileImageUrl",
+        model: "User",
+      },
+    })
+    .sort("-createdAt")
+    .then((posts) => {
+      return res.status(200).json(posts);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };
-
-exports.getTicketSuggestionRecommendation = (req, res) => {};

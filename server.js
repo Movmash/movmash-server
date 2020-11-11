@@ -74,7 +74,10 @@ const {
   getGenreLiveShow,
   getFollowingsLiveShow,
 } = require("./routes/liveShowRoutes");
-const { getUserRecommendation } = require("./routes/exploreRoutes");
+const {
+  getUserRecommendation,
+  getExplorePosts,
+} = require("./routes/exploreRoutes");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -195,7 +198,7 @@ app.get(
   mashDBAuth,
   getUserRecommendation
 );
-
+app.get("/api/v1/explore/get-explore-post", mashDBAuth, getExplorePosts);
 //.................................... web sockets .........................................
 
 io.on("connection", (socket) => {

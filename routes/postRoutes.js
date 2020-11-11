@@ -23,6 +23,7 @@ exports.postOnePosts = (req, res) => {
         moviePoster: req.body.moviePoster,
         releaseYear: req.body.releaseYear,
         movieTitle: req.body.movieTitle,
+        postType: req.body.postType,
       };
       Post.create(newReviewPost)
         .then((doc) => {
@@ -58,6 +59,7 @@ exports.postOnePosts = (req, res) => {
         releaseYear: req.body.releaseYear,
         movieTitle: req.body.movieTitle,
         overview: req.body.overview,
+        postType: req.body.postType,
       };
       Post.create(newTicketPost)
         .then((doc) => {
@@ -94,6 +96,7 @@ exports.postOnePosts = (req, res) => {
         genreName: req.body.genreName,
         language: req.body.language,
         duration: req.body.duration,
+        postType: req.body.postType,
       };
       Post.create(newSuggestMePost)
         .then((doc) => {
@@ -182,7 +185,10 @@ exports.deletePost = (req, res) => {
 
 exports.getSubscribedPost = (req, res) => {
   // pagination require ............................
-  Post.find({ postedBy: { $in: [...req.user.followings, req.user._id] } })
+  Post.find({
+    postedBy: { $in: [...req.user.followings, req.user._id] },
+    postType: { $ne: "explore" },
+  })
     .populate("postedBy", "_id email userName profileImageUrl")
     .populate({
       path: "comments",

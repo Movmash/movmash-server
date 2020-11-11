@@ -33,6 +33,7 @@ const postSchema = new Schema(
     releaseYear: Number,
     movieTitle: String,
     overview: String,
+    postType: String,
   },
   { timestamps: true }
 );
