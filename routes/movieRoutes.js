@@ -3,8 +3,98 @@ const DislikedMovie = require("../models/dislikedMovieModel");
 const Watchlist = require("../models/watchListModel");
 const { genreConverter } = require("../util/genreConverter");
 const UserGenrePreference = require("../models/userGenrePreferenceModel");
+const User = require("../models/userModel");
 const requests = require("../requests.js");
 const axios = require("../axios.js");
+const List = require("../models/listModel");
+exports.createNewList = (req, res) => {
+  const newList = {
+    createdBy: req.user,
+    movieList: req.body.movieList,
+    listTitle: req.body.listTitle,
+    description: req.body.description,
+    privacy: req.body.privacy,
+    tags: req.body.tags,
+  };
+
+  List.create(newList)
+    .then((list) => {
+      return res.status(201).json(list);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+exports.updateList = (req, res) => {
+  const newList = {
+    movieList: req.body.movieList,
+    listTitle: req.body.listTitle,
+    description: req.body.description,
+    privacy: req.body.privacy,
+    tags: req.body.tags,
+  };
+  List.findByIdAndUpdate(req.body.id, newList, { new: true })
+
+    .then((doc) => {
+      console.log(doc);
+      List.findOne({ _id: doc._id })
+        .populate("createdBy", "profileImageUrl userName fullname")
+        .then((newDoc) => {
+          return res.status(201).json(newDoc);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+exports.getUserList = (req, res) => {
+  List.find({ createdBy: req.user._id })
+    .populate("createdBy", "userName profileImageUrl fullName")
+    .sort("-createdAt")
+    .then((list) => {
+      return res.status(200).json(list);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+
+exports.getMashUserList = (req, res) => {
+  User.findOne({ userName: req.params.userName })
+    .then((user) => {
+      List.find({ createdBy: user._id })
+        .populate("createdBy", "userName profileImageUrl fullName")
+        .sort("-createdAt")
+        .then((list) => {
+          return res.status(200).json(list);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+};
+
+exports.deleteList = (req, res) => {
+  List.findByIdAndDelete(req.params.listId)
+    .then(() => {
+      return res.status(201).json({ mesg: "deleted sucessfully" });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+};
+
 exports.likeMovie = (req, res) => {
   const likedMovie = {
     movieId: req.body.movieId,
@@ -194,7 +284,38 @@ exports.undoLikeMovie = (req, res) => {
       return res.status(500).json(e);
     });
 };
-
+//.................
+exports.getUserWatchList = (req, res) => {
+  Watchlist.find({ watchlistedBy: req.user._id })
+    .populate("watchlistedBy", "profileImageUrl userName fullName")
+    .sort("-createdAt")
+    .then((watchlist) => {
+      return res.status(200).json(watchlist);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+exports.getMashUserWatchList = (req, res) => {
+  User.findOne({ userName: req.params.userName })
+    .then((user) => {
+      Watchlist.find({ watchlistedBy: user._id })
+        .populate("watchlistedBy", "profileImageUrl userName fullName")
+        .sort("-createdAt")
+        .then((watchlist) => {
+          return res.status(200).json(watchlist);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
 exports.addToWatchlist = (req, res) => {
   const watchlist = {
     movieId: req.body.movieId,

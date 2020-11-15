@@ -22,7 +22,8 @@ const userSchema = new Schema(
     },
     coverImageUrl: {
       type: String,
-      default: "no-cover-photo",
+      default:
+        "https://www.setaswall.com/wp-content/uploads/2017/06/Closed-FB-Cover-Photo-851-x-315.jpg",
     },
     genre: String,
     bio: String,

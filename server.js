@@ -61,6 +61,13 @@ const {
   checkMovieStatus,
   addToWatchlist,
   removeFromWatchlist,
+  createNewList,
+  getUserList,
+  getMashUserList,
+  deleteList,
+  updateList,
+  getUserWatchList,
+  getMashUserWatchList,
 } = require("./routes/movieRoutes.js");
 const {
   postUserReview,
@@ -78,6 +85,7 @@ const {
   getUserRecommendation,
   getExplorePosts,
 } = require("./routes/exploreRoutes");
+const { searchUser, searchTicket } = require("./routes/searchRoutes");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -151,7 +159,24 @@ app.post("/api/v1/movie/dislike-movie", mashDBAuth, dislikeMovie);
 app.post("/api/v1/movie/undo-like-movie", mashDBAuth, undoLikeMovie);
 app.post("/api/v1/movie/undo-dislike-movie", mashDBAuth, undoDislikeMovie);
 app.get("/api/v1/movie/movie-status/:id", mashDBAuth, checkMovieStatus);
-
+//..
+app.get("/api/v1/movie/get-user-list", mashDBAuth, getUserList);
+app.get(
+  "/api/v1/movie/get-mash-user-list/:userName",
+  mashDBAuth,
+  getMashUserList
+);
+//..
+app.get("/api/v1/movie/get-user-watchList", mashDBAuth, getUserWatchList);
+app.get(
+  "/api/v1/movie/get-mash-user-watchlist/:userName",
+  mashDBAuth,
+  getMashUserWatchList
+);
+//...
+app.put("/api/v1/movie/update-list", mashDBAuth, updateList);
+app.delete("/api/v1/movie/delete-list/:listId", mashDBAuth, deleteList);
+app.post("/api/v1/movie/create-new-list", mashDBAuth, createNewList);
 app.post("/api/v1/movie/add-to-watchlist", mashDBAuth, addToWatchlist);
 app.post(
   "/api/v1/movie/remove-from-watchlist",
@@ -199,6 +224,11 @@ app.get(
   getUserRecommendation
 );
 app.get("/api/v1/explore/get-explore-post", mashDBAuth, getExplorePosts);
+
+//......
+
+app.get("/api/v1/search-user", mashDBAuth, searchUser);
+app.get("/api/v1/search-ticket", mashDBAuth, searchTicket);
 //.................................... web sockets .........................................
 
 io.on("connection", (socket) => {
