@@ -7,6 +7,7 @@ const User = require("../models/userModel");
 const requests = require("../requests.js");
 const axios = require("../axios.js");
 const List = require("../models/listModel");
+const { populate } = require("../models/userModel");
 exports.createNewList = (req, res) => {
   const newList = {
     createdBy: req.user,
@@ -95,6 +96,57 @@ exports.deleteList = (req, res) => {
     });
 };
 
+//..
+
+exports.getUserLikeDislikeMovielist = (req, res) => {
+  const result = {};
+  LikedMovie.find({ likedBy: req.user._id })
+    .sort("-createdAt")
+    .then((liked) => {
+      result["likedMovies"] = liked;
+      DislikedMovie.find({ dislikedBy: req.user._id })
+        .then((dislike) => {
+          result["dislikedMovies"] = dislike;
+          return res.status(200).json(result);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+exports.getMashUserLikeDislikeMovielist = (req, res) => {
+  User.findOne({ userName: req.params.userName })
+    .sort("-createdAt")
+    .then((user) => {
+      const result = {};
+      LikedMovie.find({ likedBy: user._id })
+        .then((liked) => {
+          result["likedMovies"] = liked;
+          DislikedMovie.find({ dislikedBy: user._id })
+            .then((dislike) => {
+              result["dislikedMovies"] = dislike;
+              return res.status(200).json(result);
+            })
+            .catch((e) => {
+              console.log(e);
+              return res.status(500).json(e);
+            });
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
 exports.likeMovie = (req, res) => {
   const likedMovie = {
     movieId: req.body.movieId,

@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const Post = require("../models/postModel");
+const List = require("../models/listModel");
 exports.searchUser = (req, res) => {
   const searchUserQuery = req.query.search;
   User.find({
@@ -27,6 +28,25 @@ exports.searchTicket = (req, res) => {
   })
     .then((data) => {
       return res.status(200).json(data);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+
+exports.searchList = (req, res) => {
+  const searchListQuery = req.query.search;
+  List.find({
+    $or: [
+      { listTitle: { $regex: searchListQuery, $options: "i" } },
+      { tags: { $regex: searchListQuery, $options: "i" } },
+    ],
+    privacy: "Public",
+  })
+    .populate("createdBy", "userName profileImageUrl fullName")
+    .then((result) => {
+      return res.status(200).json(result);
     })
     .catch((e) => {
       console.log(e);

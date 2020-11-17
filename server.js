@@ -68,6 +68,8 @@ const {
   updateList,
   getUserWatchList,
   getMashUserWatchList,
+  getUserLikeDislikeMovielist,
+  getMashUserLikeDislikeMovielist,
 } = require("./routes/movieRoutes.js");
 const {
   postUserReview,
@@ -85,7 +87,11 @@ const {
   getUserRecommendation,
   getExplorePosts,
 } = require("./routes/exploreRoutes");
-const { searchUser, searchTicket } = require("./routes/searchRoutes");
+const {
+  searchUser,
+  searchTicket,
+  searchList,
+} = require("./routes/searchRoutes");
 //....................................................................................
 
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
@@ -153,7 +159,16 @@ app.put("/api/v1/home/unlike-comment", mashDBAuth, unlikeComment);
 app.get("/api/v1/home/get-post-comment", mashDBAuth, getPostComments);
 app.get("/api/v1/home/mash-user-post/:userName", mashDBAuth, getMashUserPost);
 //...........................................................................................
-
+app.get(
+  "/api/v1/movie/get-user-like-dislike-movielist",
+  mashDBAuth,
+  getUserLikeDislikeMovielist
+);
+app.get(
+  "/api/v1/movie/get-mash-user-like-dislike-movielist/:userName",
+  mashDBAuth,
+  getMashUserLikeDislikeMovielist
+);
 app.post("/api/v1/movie/like-movie", mashDBAuth, likeMovie);
 app.post("/api/v1/movie/dislike-movie", mashDBAuth, dislikeMovie);
 app.post("/api/v1/movie/undo-like-movie", mashDBAuth, undoLikeMovie);
@@ -226,7 +241,7 @@ app.get(
 app.get("/api/v1/explore/get-explore-post", mashDBAuth, getExplorePosts);
 
 //......
-
+app.get("/api/v1/search-list", mashDBAuth, searchList);
 app.get("/api/v1/search-user", mashDBAuth, searchUser);
 app.get("/api/v1/search-ticket", mashDBAuth, searchTicket);
 //.................................... web sockets .........................................
@@ -296,9 +311,12 @@ io.on("connection", (socket) => {
       { new: true }
     )
       .then((data) => {
-        console.log(data);
+        console.log(data, 1);
         // console.log(userId === data.host.toString());
-
+        if (data === null) {
+          socket.emit("room-not-found");
+          return;
+        }
         const { user } = addUser({
           id: socket.id,
           room: roomCode,
@@ -325,10 +343,16 @@ io.on("connection", (socket) => {
           host = socket.id;
           // init=true;
           socket.emit("set-host");
+          socket.broadcast.to(roomCode).emit("host-enter-in-room");
         } else {
           // can check if host is not available the emit something .....................................................................................................................
-          host = getHostDetail(roomCode).id;
-          console.log(host);
+          console.log(getHostDetail(roomCode));
+          if (getHostDetail(roomCode) === undefined) {
+            socket.emit("no-host-available");
+          } else {
+            host = getHostDetail(roomCode).id;
+            console.log(host);
+          }
         }
 
         if (socket.id !== host) {
@@ -616,8 +640,12 @@ io.on("connection", (socket) => {
   socket.on("leaving-party", () => {
     console.log("leaving-party");
     const userDetail = getUserDetail(socket.id);
-    console.log(userDetail);
+    console.log(userDetail.host);
+
     if (userDetail !== undefined) {
+      if (userDetail.host) {
+        socket.broadcast.to(userDetail.room).emit("no-host-available");
+      }
       LiveShow.findOneAndUpdate(
         { roomCode: userDetail.room },
         { $inc: { memberNumber: -1 } },
@@ -651,6 +679,9 @@ io.on("connection", (socket) => {
     const userDetail = getUserDetail(socket.id);
     console.log(userDetail);
     if (userDetail !== undefined) {
+      if (userDetail.host) {
+        socket.broadcast.to(userDetail.room).emit("no-host-available");
+      }
       LiveShow.findOneAndUpdate(
         { roomCode: userDetail.room },
         { $inc: { memberNumber: -1 } },
