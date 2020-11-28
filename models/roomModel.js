@@ -5,6 +5,11 @@ const Schema = mongoose.Schema;
 const roomModelSchema = new Schema(
   {
     participants: [{ type: ObjectId, ref: "User" }],
+    lastMessage: { type: Object },
+    // read: {
+    //   type: Boolean,
+    //   default: false,
+    // },
   },
   { timestamps: true }
 );

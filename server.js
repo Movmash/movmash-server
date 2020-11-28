@@ -1,5 +1,6 @@
 const http = require("http");
 const express = require("express");
+
 const {
   addUser,
   removeUser,
@@ -18,6 +19,8 @@ require("dotenv").config();
 // const axios = require("./axios.js");
 const LiveShow = require("./models/liveShowModel");
 const Conversation = require("./models/conversationModel");
+const Notification = require("./models/notificationModel");
+const Room = require("./models/roomModel");
 const {
   signup,
   login,
@@ -75,7 +78,12 @@ const {
   postUserReview,
   movieRatedStatus,
 } = require("./routes/reviewRoutes.js");
-const { getAllUserRooms, getRoomsMessages } = require("./routes/chatRoutes.js");
+const {
+  getAllUserRooms,
+  getRoomsMessages,
+  getUnreadRooms,
+  markChatRoomRead,
+} = require("./routes/chatRoutes.js");
 const {
   getLiveShowDetails,
   createLiveShow,
@@ -108,10 +116,10 @@ mongoose
 //....................................................................................
 
 const db = mongoose.connection;
-db.once("open", () => {
-  console.log("mashDB is now connected");
-  require("./triggers/triggers");
-});
+// db.once("open", () => {
+//   console.log("mashDB is now connected");
+//   require("./triggers/triggers");
+// });
 
 //....................................................................................
 app.get("/api/v1/movie/search-movie", searchMovie);
@@ -204,13 +212,15 @@ app.get(
   movieRatedStatus
 );
 app.post("/api/v1/movie/post-user-review", mashDBAuth, postUserReview);
+//....
 app.get("/api/v1/home/get-user-rooms", mashDBAuth, getAllUserRooms);
+app.get("/api/v1/home/get-unread-rooms", mashDBAuth, getUnreadRooms);
 app.get(
   "/api/v1/home/get-rooms-messages/:roomId",
   mashDBAuth,
   getRoomsMessages
 );
-
+app.put("/api/v1/home/mark-chatRoom-read", mashDBAuth, markChatRoomRead);
 //..................
 
 app.post("/api/v1/live/create-live-show", mashDBAuth, createLiveShow);
@@ -246,19 +256,35 @@ app.get("/api/v1/search-user", mashDBAuth, searchUser);
 app.get("/api/v1/search-ticket", mashDBAuth, searchTicket);
 //.................................... web sockets .........................................
 
-io.on("connection", (socket) => {
-  // ;
-  // console.log(socket.handshake.query.id);
+db.once("open", () => {
+  console.log("mashDB is now connected");
+  require("./triggers/triggers");
 
+  ///...................................
+  const notification = db.collection("notifications");
+  const changeStreamForNotification = notification.watch();
+  changeStreamForNotification.on("change", (change) => {
+    console.log("heyyy");
+    // console.log("change in server", change);
+    if (change.operationType === "insert") {
+      Notification.findById(change.fullDocument._id)
+        .populate("senderId", "profileImageUrl userName fullName")
+        .then((doc) => {
+          return io
+            .to(change.fullDocument.recipientId.toString())
+            .emit("notification", doc);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  });
+});
+io.on("connection", (socket) => {
   console.log(socket.handshake.query.id);
   socket.join(socket.handshake.query.id);
 
   console.log("new connection have build");
-  // socket.on("join-chat", ({ userId }) => {
-  //   // console.log(data);
-  //   socket.join(userId);
-  //   console.log(userId);
-  // });
 
   socket.on("sendMessage", (message) => {
     console.log(message);
@@ -272,35 +298,33 @@ io.on("connection", (socket) => {
           .populate("sender", "userName profileImageUrl fullName")
           .populate("recipient", "userName profileImageUrl fullName")
           .then((doc) => {
-            console.log(message.roomId);
-            return io
-              .to(message.sender)
-              .to(message.recipient)
-              .emit("message", doc);
+            Room.findByIdAndUpdate(
+              message.roomId,
+              { lastMessage: doc[0] },
+              { new: true }
+            )
+              .populate("participants", "profileImageUrl userName fullName")
+              .then((data) => {
+                console.log(message.roomId);
+                io.to(message.sender)
+                  .to(message.recipient)
+                  .emit("message-room", data);
+                return io
+                  .to(message.sender)
+                  .to(message.recipient)
+                  .emit("message", doc);
+              })
+              .catch((e) => {
+                console.log(e);
+              });
           })
           .catch((e) => {
             console.log(e);
           });
-        // .exec((err, doc) => {
-        //   if (doc.roomId !== undefined) {
-        //     console.log(doc);
-        //     return io.to(doc.roomId).emit("message", doc);
-        //   } else {
-        //     console.log(doc);
-        //   }
-        // });
       });
     } catch (error) {
       console.error(error);
     }
-    // Conversation.create(message)
-    //   .populate("sender")
-    //   .then((doc) => {
-    //     console.log(doc);
-    //   })
-    //   .catch((e) => {
-    //     console.log(e);
-    //   });
   });
 
   socket.on("join-party", ({ roomCode, userName, userId }) => {
@@ -312,7 +336,6 @@ io.on("connection", (socket) => {
     )
       .then((data) => {
         console.log(data, 1);
-        // console.log(userId === data.host.toString());
         if (data === null) {
           socket.emit("room-not-found");
           return;
@@ -335,13 +358,8 @@ io.on("connection", (socket) => {
           type: "greet",
         });
         let host = null;
-        // let init = false;
-        // const us = getHostDetail(roomCode);
-        // console.log(us);
         if (userId === data.host.toString()) {
-          // if the user is host
           host = socket.id;
-          // init=true;
           socket.emit("set-host");
           socket.broadcast.to(roomCode).emit("host-enter-in-room");
         } else {
@@ -357,8 +375,6 @@ io.on("connection", (socket) => {
 
         if (socket.id !== host) {
           console.log("call the host " + host);
-          // console.log("get data");
-          // socket.broadcast.to(host).emit("get-data");
           setTimeout(() => {
             socket.broadcast.to(host).emit("get-data", { caller: socket.id });
           }, 2000);
@@ -369,166 +385,17 @@ io.on("connection", (socket) => {
       .catch((e) => {
         console.log(e);
       });
-    // roomnum = roomCode;
-    // const tel = ;
-    // console.log(tel);
-    // var host = null;
-    // var init = false;
-    // if (getUserDetail(socket.id) === undefined) {
-    //   socket.send(socket.id);
-    //   host = socket.id;
-    //   init = true;
-    //   console.log("set-host");
-    //   socket.emit("set-host");
-    // } else {
-    //   console.log(socket.roomnum);
-    //   // host = io.sockets.adapter.rooms[socket.roomnum].host;
-    // }
-    // if (init) {
-    //   // io.sockets.adapter.rooms[socket.roomnum].host = host;
-    // }
-
-    // const { user } = addUser({
-    //   id: socket.id,
-    //   room: roomCode,
-    //   name: userName,
-    //   host: true,
-    // });
-    // socket.join(user.room);
-    // socket.emit("party-message", {
-    //   user: "admin",
-    //   text: `welcome, ${user.name} !!!`,
-    //   type: "greet",
-    // });
-    // socket.broadcast.to(user.room).emit("party-message", {
-    //   user: "admin",
-    //   text: `${user.name} has joined!`,
-    //   type: "greet",
-    // });
-
-    // if (socket.id !== host) {
-    //   console.log("call the host " + host);
-
-    //   setTimeout(() => {
-    //     socket.broadcast.to(host).emit("get-data");
-    //   }, 1000);
-
-    //   // io.sockets.adapter.rooms[socket.roomnum].users.push(sock)
-    // } else {
-    //   console.log("I am the host");
-    // }
-
-    //.........................
-    // connections.push(socket);
-    // console.log("connected: %s sockets connected", connections.length);
-    // socket.roomnum = roomCode;
-    // console.log("1", socket.roomnum);
-    // userrooms[socket.id] = roomCode;
-    // var host = null;
-    // var init = false;
-    // if (socket.roomnum == null || socket.roomnum == "") {
-    //   socket.roomnum = "1";
-    //   userrooms[socket.id] = "1";
-    // }
-
-    // if (!rooms.includes(socket.roomnum)) {
-    //   rooms.push(socket.roomnum);
-    // }
-
-    // if (io.sockets.adapter.rooms[socket.roomnum] === undefined) {
-    //   socket.send(socket.id);
-    //   host = socket.id;
-    //   init = true;
-    //   console.log("set-host");
-    //   socket.emit("set-host");
-    // } else {
-    //   console.log(socket.roomnum);
-    //   host = io.sockets.adapter.rooms[socket.roomnum].host;
-    // }
-    // socket.join(socket.roomnum);
-
-    // if (init) {
-    //   io.sockets.adapter.rooms[socket.roomnum].host = host;
-    // }
-
-    // if (socket.id !== host) {
-    //   console.log("call the host " + host);
-
-    //   setTimeout(() => {
-    //     socket.broadcast.to(host).emit("get-data");
-    //   }, 1000);
-
-    //   // io.sockets.adapter.rooms[socket.roomnum].users.push(sock)
-    // } else {
-    //   console.log("I am the host");
-    // }
-    // io.to(roomCode).emit("roomData", {
-    //   room: user.room,
-    //   users: getUsersInRoom(user.room),
-    // });
   });
   socket.on("send-party-message", ({ roomCode, userName, message }) => {
     console.log(socket.id);
     const user = getUserDetail(socket.id);
-    //  const user = getUser(socket.id);
-    // console.log(user);
+
     io.to(user.room).emit("party-message", {
       user: user.name,
       text: message,
       type: "user",
     });
-    //  io.to(user.room).emit("roomData", {
-    //    room: user.room,
-    //    text: message,
-    //  });
-    //  callback();
   });
-
-  // socket.on("new-room", (data, callback) => {
-  //   connections.push(socket);
-  //   console.log("connected: %s sockets connected", connections.length);
-  //   socket.roomnum = data;
-  //   console.log(socket.roomnum);
-  //   userrooms[socket.id] = data;
-  //   var host = null;
-  //   var init = false;
-  //   if (socket.roomnum == null || socket.roomnum == "") {
-  //     socket.roomnum = "1";
-  //     userrooms[socket.id] = "1";
-  //   }
-
-  //   if (!rooms.includes(socket.roomnum)) {
-  //     rooms.push(socket.roomnum);
-  //   }
-
-  //   if (io.sockets.adapter.rooms[socket.roomnum] === undefined) {
-  //     socket.send(socket.id);
-  //     host = socket.id;
-  //     init = true;
-  //     console.log("set-host");
-  //     socket.emit("set-host");
-  //   } else {
-  //     console.log(socket.roomnum);
-  //     host = io.sockets.adapter.rooms[socket.roomnum].host;
-  //   }
-  //   socket.join(socket.roomnum);
-
-  //   if (init) {
-  //     io.sockets.adapter.rooms[socket.roomnum].host = host;
-  //   }
-
-  //   if (socket.id !== host) {
-  //     console.log("call the host " + host);
-
-  //     setTimeout(() => {
-  //       socket.broadcast.to(host).emit("get-data");
-  //     }, 1000);
-
-  //     // io.sockets.adapter.rooms[socket.roomnum].users.push(sock)
-  //   } else {
-  //     console.log("I am the host");
-  //   }
-  // });
 
   //...........................................
   socket.on("play-video", (data) => {
@@ -640,7 +507,6 @@ io.on("connection", (socket) => {
   socket.on("leaving-party", () => {
     console.log("leaving-party");
     const userDetail = getUserDetail(socket.id);
-    console.log(userDetail.host);
 
     if (userDetail !== undefined) {
       if (userDetail.host) {
@@ -673,11 +539,12 @@ io.on("connection", (socket) => {
         });
     }
   });
+  //......................................
+
   //...........................................
   socket.on("disconnect", () => {
     console.log("disconnected user");
     const userDetail = getUserDetail(socket.id);
-    console.log(userDetail);
     if (userDetail !== undefined) {
       if (userDetail.host) {
         socket.broadcast.to(userDetail.room).emit("no-host-available");
@@ -705,137 +572,8 @@ io.on("connection", (socket) => {
     }
   });
 });
-
 const port = process.env.PORT || 8000;
 
 server.listen(port, () => {
   console.log(`the server is started at port ${port}`);
 });
-
-// server.timeout = 0;
-// const posts = db.collection("posts");
-// const changeStream = posts.watch();
-
-// changeStream.on("change", (change) => {
-//   if (change.operationType === "update") {
-//     // console.log(change);
-//     const updatedDocumentId = change.documentKey._id;
-//     if ("likeCount" in change.updateDescription.updatedFields) {
-//       // trigger on like the post led to create a new notification
-//       // console.log(
-//       //   typeof change.updateDescription.updatedFields.likes === "undefined"
-//       // );
-//       console.log(
-//         typeof change.updateDescription.updatedFields.likes === "undefined"
-//       );
-//       if (
-//         typeof change.updateDescription.updatedFields.likes === "undefined"
-//       ) {
-//         console.log("liked");
-//         Post.findById(updatedDocumentId)
-//           .then((doc) => {
-//             //if user not like its own post
-//             if (!doc.likes.includes(doc.postedBy)) {
-//               const newNotification = {
-//                 type: "like",
-//                 senderId:
-//                   change.updateDescription.updatedFields[
-//                     Object.keys(change.updateDescription.updatedFields)[1]
-//                   ],
-//                 postId: updatedDocumentId,
-//                 recipientId: doc.postedBy,
-//               };
-//               Notification.create(newNotification)
-//                 .then((doc) => {
-//                   console.log(doc);
-//                 })
-//                 .catch((e) => {
-//                   console.log(e);
-//                 });
-//             }
-//             // console.log(doc);
-//           })
-//           .catch((e) => {
-//             console.log(e);
-//           });
-//       }
-//       // trigger on unlike the post let to delete the notification
-//       else {
-//         if ("likes" in change.updateDescription.updatedFields) {
-//           console.log("unlike");
-//           const likeUserId = change.updateDescription.updatedFields.likes;
-//           console.log(likeUserId);
-//           Notification.deleteMany(
-//             { type: "like", senderId: { $nin: likeUserId } },
-//             (err) => {
-//               if (err) console.log(err);
-//             }
-//           );
-//         }
-
-//         // db.collection("notifications")
-//         // console.log(
-//         //   change.updateDescription.updatedFields[
-//         //     Object.keys(change.updateDescription.updatedFields)[1]
-//         //   ]
-//         // );
-//         // console.log(typeof change.updateDescription.updatedFields.likes);
-//         // console.log(change);
-//         //         }
-//       }
-//     }
-
-//     // console.log(
-//     // change.updateDescription.updatedFields[
-//     //   Object.keys(change.updateDescription.updatedFields)[1]
-//     // ]
-//     // );
-//     // Post.findById(change.documentKey._id).then((doc) => console.log(doc));
-//   }
-// });
-// const users = db.collection("users");
-// const changeStreamForFollowing = users.watch();
-// changeStreamForFollowing.on("change", (change) => {
-//   // console.log(typeof change.updateDescription.updatedFields.followers);
-//   if (change.operationType === "update") {
-//     if ("followersCount" in change.updateDescription.updatedFields) {
-//       if (
-//         typeof change.updateDescription.updatedFields.followers ===
-//         "undefined"
-//       ) {
-//         console.log("follow");
-//         // console.log(
-//         //   change.updateDescription.updatedFields[
-//         //     Object.keys(change.updateDescription.updatedFields)[0]
-//         //   ]
-//         // );
-//         const newFollowNotification = {
-//           type: "following",
-//           recipientId: change.documentKey._id,
-//           senderId:
-//             change.updateDescription.updatedFields[
-//               Object.keys(change.updateDescription.updatedFields)[0]
-//             ],
-//         };
-//         Notification.create(newFollowNotification)
-//           .then((doc) => {
-//             console.log(doc);
-//           })
-//           .catch((e) => {
-//             console.log(e);
-//           });
-//       } else {
-//         console.log("unfollow");
-//         console.log(change);
-//         const followerUserId =
-//           change.updateDescription.updatedFields.followers;
-//         Notification.deleteMany(
-//           { type: "following", senderId: { $nin: followerUserId } },
-//           (err) => {
-//             if (err) console.log(err);
-//           }
-//         );
-//       }
-//     }
-//   }
-// });

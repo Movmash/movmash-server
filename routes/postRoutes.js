@@ -1,6 +1,7 @@
 const Post = require("../models/postModel");
 const Comment = require("../models/commentModel");
 const User = require("../models/userModel");
+const Like = require("../models/likePostModel");
 exports.postOnePosts = (req, res) => {
   // console.log(req.user);
   switch (req.body.type) {
@@ -124,31 +125,47 @@ exports.postOnePosts = (req, res) => {
   }
 };
 exports.likePost = (req, res) => {
-  Post.findByIdAndUpdate(
-    req.body.postId,
-    {
-      $push: { likes: req.user._id },
-      $inc: { likeCount: 1 },
-    },
-    { new: true }
-  ).exec((err, result) => {
-    if (err) return res.status(422).json({ error: err });
-    else return res.status(201).json(result);
-  });
+  console.log("hell");
+  Like.create({
+    postId: req.body.postId,
+    likedBy: req.user._id,
+  })
+    .then((likeDoc) => {
+      Post.findByIdAndUpdate(
+        req.body.postId,
+        {
+          $push: { likes: req.user._id },
+          $inc: { likeCount: 1 },
+        },
+        { new: true }
+      ).exec((err, result) => {
+        if (err) return res.status(422).json({ error: err });
+        else return res.status(201).json(result);
+      });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };
 
 exports.unlikePost = (req, res) => {
-  Post.findByIdAndUpdate(
-    req.body.postId,
-    {
-      $pull: { likes: req.user._id },
-      $inc: { likeCount: -1 },
-    },
-    { new: true }
-  ).exec((err, result) => {
-    if (err) return res.status(422).json({ error: err });
-    else return res.status(201).json(result);
-  });
+  Like.findOneAndDelete({ postId: req.body.postId, likedBy: req.user._id })
+    .then(() => {
+      Post.findByIdAndUpdate(
+        req.body.postId,
+        {
+          $pull: { likes: req.user._id },
+          $inc: { likeCount: -1 },
+        },
+        { new: true }
+      ).exec((err, result) => {
+        if (err) return res.status(422).json({ error: err });
+        else return res.status(201).json(result);
+      });
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 };
 
 exports.deletePost = (req, res) => {

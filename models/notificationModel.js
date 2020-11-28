@@ -25,6 +25,10 @@ const notificationSchema = new Schema(
       type: ObjectId,
       ref: "Comment",
     },
+    likeId: {
+      type: ObjectId,
+      ref: "Like",
+    },
   },
   {
     timestamps: true,
