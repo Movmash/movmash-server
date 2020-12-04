@@ -83,6 +83,7 @@ const {
   getRoomsMessages,
   getUnreadRooms,
   markChatRoomRead,
+  createChatRoom,
 } = require("./routes/chatRoutes.js");
 const {
   getLiveShowDetails,
@@ -213,6 +214,7 @@ app.get(
 );
 app.post("/api/v1/movie/post-user-review", mashDBAuth, postUserReview);
 //....
+app.post("/api/v1/home/create-chat-room", mashDBAuth, createChatRoom);
 app.get("/api/v1/home/get-user-rooms", mashDBAuth, getAllUserRooms);
 app.get("/api/v1/home/get-unread-rooms", mashDBAuth, getUnreadRooms);
 app.get(
@@ -292,7 +294,7 @@ io.on("connection", (socket) => {
       let chat = new Conversation(message);
 
       chat.save((err, doc) => {
-        if (err) return res.status(500).json({ success: false, err });
+        if (err) return console.log(err);
 
         Conversation.find({ _id: doc._id })
           .populate("sender", "userName profileImageUrl fullName")
@@ -573,7 +575,7 @@ io.on("connection", (socket) => {
   });
 });
 const port = process.env.PORT || 8000;
-
+app.set("socketio", io);
 server.listen(port, () => {
   console.log(`the server is started at port ${port}`);
 });

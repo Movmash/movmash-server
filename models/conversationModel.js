@@ -9,6 +9,9 @@ const conversationModelSchema = new Schema(
     message: String,
     read: { type: Boolean, default: false },
     roomId: { type: ObjectId, ref: "Room" },
+    type: String,
+    movieData: { type: Object },
+    postData: { type: Object },
   },
   { timestamps: true }
 );
