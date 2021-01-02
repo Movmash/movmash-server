@@ -14,6 +14,15 @@ const mongoose = require("mongoose");
 const socketio = require("socket.io");
 const server = http.createServer(app);
 const io = socketio(server);
+// const { ExpressPeerServer } = require("peer");
+// const customGenerationFunction = () =>
+//   (Math.random().toString(36) + "0000000000000000000").substr(2, 16);
+// const peerServer = ExpressPeerServer(server, {
+//   debug: true,
+//   key: "peerjs",
+//   path: "/",
+//   generateClientId: customGenerationFunction,
+// });
 require("dotenv").config();
 // const requests = require("./requests.js");
 // const axios = require("./axios.js");
@@ -102,7 +111,7 @@ const {
   searchList,
 } = require("./routes/searchRoutes");
 //....................................................................................
-
+// app.use("/peerjs", peerServer);
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
 app.use(express.json());
 mongoose
@@ -282,6 +291,9 @@ db.once("open", () => {
     }
   });
 });
+const users = {};
+
+const socketToRoom = {};
 io.on("connection", (socket) => {
   console.log(socket.handshake.query.id);
   socket.join(socket.handshake.query.id);
@@ -374,7 +386,8 @@ io.on("connection", (socket) => {
             console.log(host);
           }
         }
-
+        const userList = getUsersInRoom(roomCode);
+        io.to(roomCode).emit("user-list-inside-the-room", userList);
         if (socket.id !== host) {
           console.log("call the host " + host);
           setTimeout(() => {
@@ -506,6 +519,73 @@ io.on("connection", (socket) => {
       }
     }
   });
+  //.....get user in the room ...........................
+  // socket.on("join-video-chat-room", (roomCode, id) => {
+  //   socket.join(roomCode);
+  //   console.log(id, roomCode);
+  //   io.to(roomCode).emit("user-connected-to-video-chat", id);
+  // });
+  socket.on("get-user-in-the-room", (data) => {
+    const userList = getUsersInRoom(data.roomId);
+    console.log(data);
+    socket.emit("user-list-inside-the-room", userList);
+  });
+  socket.on("sending-signal", (payload) => {
+    socket.broadcast.to(payload.userToSignal).emit("user-joined-video-chat", {
+      signal: payload.signal,
+      callerID: payload.callerID,
+    });
+    console.log("sending singnal");
+  });
+  socket.on("returning-signal", (payload) => {
+    socket.broadcast.to(payload.callerID).emit("receiving-returned-signal", {
+      signal: payload.signal,
+      id: socket.id,
+    });
+    console.log("returning singnal");
+  });
+  //............//.....//....................
+
+  socket.on("join room", (roomID) => {
+    const userList = getUsersInRoom(roomID);
+    console.log(roomID);
+    if (users[roomID]) {
+      const length = users[roomID].length;
+      if (length === 4) {
+        socket.emit("room full");
+        return;
+      }
+      users[roomID].push(socket.id);
+    } else {
+      users[roomID] = [socket.id];
+    }
+    console.log(users);
+    console.log(userList);
+    socketToRoom[socket.id] = roomID;
+    // const usersInThisRoom = userList.filter((user) => user.id !== socket.id);
+
+    const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
+    console.log(usersInThisRoom, 23);
+    socket.emit("all users", usersInThisRoom);
+  });
+
+  socket.on("sending signal", (payload) => {
+    console.log("sending signal");
+    io.to(payload.userToSignal).emit("user joined", {
+      signal: payload.signal,
+      callerID: payload.callerID,
+    });
+  });
+
+  socket.on("returning signal", (payload) => {
+    console.log("returning signal");
+    io.to(payload.callerID).emit("receiving returned signal", {
+      signal: payload.signal,
+      id: socket.id,
+    });
+  });
+  //.............//...........//..............
+  //......................................................
   socket.on("leaving-party", () => {
     console.log("leaving-party");
     const userDetail = getUserDetail(socket.id);
@@ -522,12 +602,25 @@ io.on("connection", (socket) => {
         .then((data) => {
           const user = removeUser(socket.id);
           console.log(data);
+          if (users[userDetail.room]) {
+            const indexVideo = users[userDetail.room].filter(
+              (u) => u === socket.id
+            );
+            if (indexVideo !== -1)
+              users[userDetail.room].splice(indexVideo, 1)[0];
+          }
+
           if (user) {
             socket.broadcast.to(user.room).emit("party-message", {
               user: "admin",
               text: `${user.name} has left`,
               type: "greet",
             });
+            const userList = getUsersInRoom(user.room);
+            console.log(userList, "leaving");
+            io.to(user.room).emit("user-list-inside-the-room", userList);
+            io.to(user.room).emit("close-peer");
+            console.log("closePeer");
             socket.leave(user.room);
             // io.to(user.room).emit("party-message", {
             //   user: "admin",
@@ -559,12 +652,23 @@ io.on("connection", (socket) => {
         .then((data) => {
           const user = removeUser(socket.id);
           console.log(data);
+          if (users[userDetail.room]) {
+            const indexVideo = users[userDetail.room].filter(
+              (u) => u === socket.id
+            );
+            if (indexVideo !== -1)
+              users[userDetail.room].splice(indexVideo, 1)[0];
+          }
           if (user) {
             io.to(user.room).emit("party-message", {
               user: "admin",
               text: `${user.name} has left`,
               type: "greet",
             });
+            const userList = getUsersInRoom(user.room);
+            io.to(user.room).emit("user-list-inside-the-room", userList);
+            io.to(user.room).emit("close-peer");
+            console.log("closePeer");
             socket.leave(user.room);
           }
         })
