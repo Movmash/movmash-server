@@ -8,6 +8,8 @@ const ticketRequestSchema = new Schema(
     postedBy: { type: ObjectId, ref: "User" },
     requestedBy: { type: ObjectId, ref: "User" },
     bookingStatus: { type: String, default: "pending" },
+    showTimeFrom: { type: Date },
+    showTimeTo: { type: Date },
   },
   {
     timestamps: true,

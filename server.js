@@ -56,6 +56,10 @@ const {
   unlikeComment,
   getPostComments,
   getMashUserPost,
+  sendBookingRequest,
+  getRequestedTicket,
+  cancelRequestedTicket,
+  markRequestedTicketConfirmed,
 } = require("./routes/postRoutes.js");
 const {
   markNotificationRead,
@@ -265,6 +269,27 @@ app.get("/api/v1/explore/get-explore-post", mashDBAuth, getExplorePosts);
 app.get("/api/v1/search-list", mashDBAuth, searchList);
 app.get("/api/v1/search-user", mashDBAuth, searchUser);
 app.get("/api/v1/search-ticket", mashDBAuth, searchTicket);
+//............................................ ticket booking management .................
+app.post(
+  "/api/v1/bookingTicket/send-booking-request",
+  mashDBAuth,
+  sendBookingRequest
+);
+app.get(
+  "/api/v1/bookingTicket/get-requested-ticket",
+  mashDBAuth,
+  getRequestedTicket
+);
+app.delete(
+  "/api/v1/bookingTicket/cancel-requested-ticket/:postId",
+  mashDBAuth,
+  cancelRequestedTicket
+);
+app.put(
+  "/api/v1/bookingTicket/mark-ticket-confirm",
+  mashDBAuth,
+  markRequestedTicketConfirmed
+);
 //.................................... web sockets .........................................
 
 db.once("open", () => {

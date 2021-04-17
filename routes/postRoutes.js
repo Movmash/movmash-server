@@ -2,6 +2,7 @@ const Post = require("../models/postModel");
 const Comment = require("../models/commentModel");
 const User = require("../models/userModel");
 const Like = require("../models/likePostModel");
+const TicketRequest = require("../models/ticketRequestModel");
 exports.postOnePosts = (req, res) => {
   // console.log(req.user);
   switch (req.body.type) {
@@ -422,5 +423,104 @@ exports.getMashUserPost = (req, res) => {
     .catch((e) => {
       console.log("user Not found");
       console.log(e);
+    });
+};
+//........... booking ticket management
+
+exports.sendBookingRequest = (req, res) => {
+  console.log(req.body);
+  const bookingRequest = {
+    postId: req.body.postId,
+    postedBy: req.body.postedBy,
+    requestedBy: req.user._id,
+    showTimeFrom: req.body.showTimeFrom,
+    showTimeTo: req.body.showTimeTo,
+  };
+
+  TicketRequest.create(bookingRequest)
+    .then((doc) => {
+      TicketRequest.findById(doc._id)
+        .populate("postedBy", "profileImageUrl userName email")
+        .populate("requestedBy", "profileImageUrl userName email")
+        .populate("postId")
+
+        .then((ticket) => {
+          Post.findByIdAndUpdate(
+            req.body.postId,
+            { $push: { bookingRequest: req.user._id } },
+            { new: true }
+          )
+            .then((post) => {
+              console.log(ticket);
+              return res.status(201).json(ticket);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json({ error: "internal server error" });
+    });
+};
+
+exports.getRequestedTicket = (req, res) => {
+  TicketRequest.find({ requestedBy: req.user._id })
+    .populate("postedBy", "profileImageUrl userName email")
+    .populate("requestedBy", "profileImageUrl userName email")
+    .populate("postId")
+    .sort("-createdAt")
+    .then((data) => {
+      //................
+      return res.status(200).json(data);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json({ error: e });
+    });
+};
+
+exports.cancelRequestedTicket = (req, res) => {
+  console.log(req.body);
+  TicketRequest.findOneAndDelete({
+    postId: req.params.postId,
+    requestedBy: req.user._id,
+  })
+    .then((doc) => {
+      Post.findByIdAndUpdate(
+        req.params.postId,
+        {
+          $pull: { bookingRequest: req.user._id },
+        },
+        { new: true }
+      )
+        .then((post) => {
+          return res.status(201).json({ deleted: "successfully" });
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
+    });
+};
+exports.markRequestedTicketConfirmed = (req, res) => {
+  TicketRequest.findByIdAndUpdate(
+    req.body.ticketId,
+    { bookingStatus: "confirm" },
+    { new: true }
+  )
+    .then((doc) => {
+      return res.status(201).json(doc);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(500).json(e);
     });
 };

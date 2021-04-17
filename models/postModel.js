@@ -34,6 +34,7 @@ const postSchema = new Schema(
     movieTitle: String,
     overview: String,
     postType: String,
+    bookingRequest: [{ type: ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
