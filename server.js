@@ -1,6 +1,7 @@
 const http = require("http");
 const express = require("express");
-
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require("swagger-ui-express");
 const {
   addUser,
   removeUser,
@@ -114,6 +115,31 @@ const {
   searchTicket,
   searchList,
 } = require("./routes/searchRoutes");
+//.....................................[swagger option]...............................
+const swaggerOption = {
+  swaggerDefinition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Movmash API",
+      version: "1.0.0",
+      description:
+        "Welcome to the Movmash API documentation. Please go through all the doc mention below.",
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+  },
+  apis: ["./documentation/*"],
+  servers: ["http://localhost:8000"],
+};
+const swaggerDocs = swaggerJsDoc(swaggerOption);
+app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
 //....................................................................................
 // app.use("/peerjs", peerServer);
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));

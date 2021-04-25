@@ -1,0 +1,526 @@
+
+ tags:
+ - name: movies
+   description: All operation related to the third party api
+ paths:
+   /api/v1/movie/upcoming-cover: #upcomingCovers
+      get:
+         tags:
+         - movies
+         summary: Get all upcoming movies
+         description: Return top 5 upcoming movie in a form of array consist of an object
+         responses:
+             200:
+               description: Success
+
+   /api/v1/movie/genre/{genreName}/{pageNumber}: #movieLists
+      get:
+         tags:
+         - movies
+         summary: Get list of movie through genre
+         description: Return an object in which result field have a array of all the movies related to the mentioned genre 
+         produces:
+         - application/xml
+         - application/json
+         parameters:
+         - name: genreName
+           in: path
+           description: Write the genre name
+           required: true
+           type: string
+         - name: pageNumber
+           in: path
+           description: Write the page number
+           required: true
+           type: integer
+           format: int64
+         responses:
+             200:
+                 description: Successfull
+
+   /api/v1/movie/details/{movieId}: #getMovieDetail
+      get:
+          tags:
+          - movies
+          summary: Get movie details
+          description: Return an object which consist of all the details of a perticular movie
+          produces:
+          - "application/xml"
+          - "application/json"
+          parameters:
+          - name: movieId
+            in: path
+            description: write movie genre Id
+            required: true
+            type: integer
+            format: int64
+          responses:
+              200:
+                  description: successfull
+   
+   /api/v1/movie/search-movie: #searchMovie               
+      get:
+        tags:
+        - movies
+        summary: Search the movie
+        description: Return an object which consist of a result field having an array of all the searched result which was given in the query field
+        parameters:
+        - name: query
+          in: query
+          description: write your query to search your movies
+          required: true
+          type: string
+        responses:
+          200:
+              description: successfull  
+
+   /api/v1/movie/create-new-list: #createNewList               
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieList:
+                    type: array
+                    items:
+                      type: object
+                      description: movie details
+                  listTitle: 
+                    type: string
+                  description:
+                    type: string
+                  privacy:
+                    type: string
+                  tags:
+                    type: array 
+                    items: 
+                      type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieList:
+                    type: array
+                    items:
+                      type: object
+                      description: movie details
+                  listTitle: 
+                    type: string
+                  description:
+                    type: string
+                  privacy:
+                    type: string
+                  tags:
+                    type: array 
+                    items: 
+                      type: string       
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/update-list: #updateList               
+      put:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: updateList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieList:
+                    type: array
+                    items:
+                      type: object
+                  listTitle: 
+                    type: string
+                  description:
+                    type: string
+                  privacy:
+                    type: string
+                  tags:
+                    type: array 
+                    items:
+                      type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieList:
+                    type: array
+                    items:
+                      type: object
+                  listTitle: 
+                    type: string
+                  description:
+                    type: string
+                  privacy:
+                    type: string
+                  tags:
+                    type: array 
+                    items:
+                      type: string      
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/get-user-list: #getUserList               
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/get-mash-user-list/{userName}: #getMashUserList               
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        parameters:
+        - name: userName
+          in: path
+          type: string
+          required: true
+          description: Type username for watching their lists
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/delete-list/{listId}: #deleteList               
+      delete:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        parameters:
+        - name: listId
+          in: path
+          type: string
+          required: true
+          description: Type the List Id which you wanna delete
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/get-user-like-dislike-movielist: #getUserLikeDislikeMovielist               
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/get-mash-user-like-dislike-movielist/{userName}: #getMashUserLikeDislikeMovielist               
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        parameters:
+        - name: userName
+          in: path
+          required: true
+          type: string
+          description: Type username to watch their like and dislike movie
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/like-movie: #likeMovie                 
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: likeMovie
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+                  movieTitle:
+                    type: string  
+                  overview:
+                    type: string
+                  moviePoster:
+                    type: string
+                  releaseDate: 
+                    type: string
+                  genreId:
+                    type: array 
+                    items:
+                      type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+                  movieTitle:
+                    type: string  
+                  overview:
+                    type: string
+                  moviePoster:
+                    type: string
+                  releaseDate: 
+                    type: string
+                  genreId:
+                    type: array 
+                    items:
+                      type: integer       
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/dislike-movie: #dislikeMovie               
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: dislikeMovie
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+                  movieTitle:
+                    type: string  
+                  overview:
+                    type: string
+                  moviePoster:
+                    type: string
+                  releaseDate: 
+                    type: string
+                  genreId:
+                    type: array 
+                    items:
+                      type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+                  movieTitle:
+                    type: string  
+                  overview:
+                    type: string
+                  moviePoster:
+                    type: string
+                  releaseDate: 
+                    type: string
+                  genreId:
+                    type: array 
+                    items:
+                      type: integer       
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/undo-like-movie: #undoLikeMovie               
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: undoLikeMovie
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer  
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/undo-dislike-movie: #undoDislikeMovie               
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: undoDislikeMovie
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer  
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/get-user-watchList: #getUserWatchList                
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies 
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/get-mash-user-watchlist/{userName}: #getMashUserWatchList               
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        parameters:
+        - name: userName
+          in: path
+          type: string
+          description: Type username to get all its watchlist
+          required: true
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/add-to-watchlist: #addToWatchlist               
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: addToWatchlist
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+                  movieTitle:
+                    type: string  
+                  overview:
+                    type: string
+                  moviePoster:
+                    type: string
+                  releaseDate: 
+                    type: string
+                  genreId:
+                    type: array 
+                    items:
+                      type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+                  movieTitle:
+                    type: string  
+                  overview:
+                    type: string
+                  moviePoster:
+                    type: string
+                  releaseDate: 
+                    type: string
+                  genreId:
+                    type: array 
+                    items:
+                      type: integer       
+        
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/remove-from-watchlist: #removeFromWatchlist               
+      post:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        requestBody:
+          description: removeFromWatchlist
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: integer  
+        
+        responses:
+          default:
+            description: successfull
+   /api/v1/movie/movie-status/{id}: #checkMovieStatus               
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - movies
+        parameters:
+        - name: id
+          type: string
+          in: path
+          required: true
+          description: Type movie ID to check the status
+        responses:
+          default:
+            description: successfull
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
