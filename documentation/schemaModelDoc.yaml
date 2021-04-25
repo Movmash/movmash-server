@@ -1,0 +1,635 @@
+components:
+  schemas:   
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          required: true
+        password:
+          type: string
+          required: true
+        username:
+          type: string
+          required: true  
+        profileImageUrl:
+          type: string
+        coverImageUrl:
+          type: string    
+        genre: 
+          type: string
+        bio: 
+          type: string
+        followersCount:
+          type: integer
+          default: 0
+        followingsCount:
+          type: integer
+          default: 0
+        watchHour: 
+          type: integer
+          default: 0
+        userRating: 
+          type: integer
+        postNumber:
+          type: integer
+          default: 0
+        fullName:
+          type: string
+        followers:
+          type: array
+          items:
+            type: object
+            description: This will be the array of user model
+            properties:
+              _id: 
+                type: string
+              email: 
+                type: string
+              username: 
+                type: string
+              profileImageUrl:
+                type: string    
+        followings:
+          type: array 
+          items:
+            type: object
+            description: This will be the array of user model
+            properties:
+              _id: 
+                type: string
+              email: 
+                type: string
+              username: 
+                type: string
+              profileImageUrl:
+                type: string  
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: User                   
+    Post:
+      type: object
+      properties:
+        likeCount:
+          type: integer
+          default: 0
+        commentCount:
+          type: integer
+          default: 0
+        rating:
+          type: integer
+        type:
+          type: string
+        postedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ details who posted the post
+        likes:
+          type: array
+          description: List of User ID/ details who like the post
+          items:
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: User ID/ details who like the post
+        comments:
+          type: array
+          description: List of User ID/ details who comment the post
+          items: 
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: User ID/ details who comment the post
+        movieId:
+          type: integer
+        review:
+          type: string
+        description:
+          type: string
+          description: The description of a movie
+        showTimeFrom:
+          type: date-time
+        showTimeTo:
+          type: date-time
+        genreName:
+          type: array
+          description: List of genre name
+          items: 
+            type: string
+            description: Genre name
+        language:
+          type: string
+        duration:
+          type: string
+        genreId:
+          type: array
+          description: List of genre ID
+          items:
+            type: integer
+            description: Genre ID which refer to the genre name
+        moviePoster:
+          type: string
+        releaseYear:
+          type: string
+        movieTitle:
+          type: string
+        overview:
+          type: string
+          description: Overview of a movie same like description
+        postType:
+          type: string
+        bookingRequest:
+          type: array
+          description: List of User ID/ description who requested for the ticket
+          items:
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: User ID/ description who request for the ticket post
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: Comment
+    LikedMovie:
+      type: object
+      xml:
+        name: LikedMovie
+      properties:
+        movieId:
+          type: integer
+        likedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ detail who like a certain movie
+        movieTitle:
+          type: string
+        overview:
+          type: string
+          description: Overview/ description of a movie
+        moviePoster:
+          type: string
+        releaseDate:
+          type: string
+        genreId:
+          type: array
+          description: List of genre IDs
+          items:
+            type: integer
+            description: Genre Id which refer to the genre
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+    DislikedMovie:
+      type: object
+      properties:
+        movieId:
+          type: integer
+        dislikedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ detail who like a certain movie
+        movieTitle:
+          type: string
+        overview:
+          type: string
+          description: Overview/ description of a movie
+        moviePoster:
+          type: string
+        releaseDate:
+          type: string
+        genreId:
+          type: array
+          description: List of genre IDs
+          items:
+            type: integer
+            description: Genre Id which refer to the genre
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: DislikedMovie
+    List:
+      type: object
+      properties:
+        createdBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ description who have created the movie list
+        movieList:
+          type: array
+          description: List of object which contain movie data of certain movie list
+          items:
+            type: object
+            description: Contain movie info
+        listTitle:
+          type: string
+
+        description:
+          type: string
+          description: description/ information of the movie list
+
+        privacy:
+          type: string
+
+        tags:
+          type: array
+          description: list of tags to able to search the list
+          items:
+            type: string
+            description: tag name
+
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: List
+    LikePost:
+      type: object
+      properties:
+        postId:
+          # type: object
+          $ref: '#/components/schemas/Post'
+          description: Post ID/ data of which the like belongs
+        likedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ description who like the post
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: LikePost
+    Notification:
+      type: object
+      properties:
+        type:
+          type: string
+          description: which type of notification is this. e.g. like, comment
+        read:
+          type: boolean
+          default: false
+        senderId:
+          # type: object
+          $ref: '#/components/schemas/User'
+          default: User ID/User description, who sender the notification
+        postId:
+          # type: object
+          $ref: '#/components/schemas/Post'
+          description: Post ID/Post description, from which the notification belongs
+        recipientId:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/User description, who recieve the notification
+        commentId:
+          # type: object
+          $ref: '#/components/schemas/Comment'
+          description: Comment ID/Comment data, if the type of notification is comment
+        likeId:
+          # type: object
+          $ref: '#/components/schemas/LikePost'
+          description: Like ID/ like data, if the type of notification is like
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: Notification
+    Conversation:
+      type: object
+      properties:
+        sender:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data who send the message
+        recipient:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data who recieve the message
+        message:
+          type: string
+        read:
+          type: boolean
+          default: false
+        roomId:
+          # type: object
+          $ref: '#/components/schemas/Room'
+          description: Room ID/ room detail which the Conversation belongs
+        type:
+          type: string
+          description: which type of message. It could be simple text or any post
+        movieData:
+          type: object
+          description: Movie detail if type of massage is suggestion
+        postData:
+          type: object
+          description: post data if type of message is post 
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: Conversation
+    LiveShow:
+      type: object
+      properties:
+        host:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data who is the host of the live show
+        description:
+          type: string
+          description: The details about the live show
+        roomCode:
+          type: string
+        movieId:
+          type: integer
+        posterUrl:
+          type: string
+        privacy:
+          type: string
+        roomTitle:
+          type: string
+        memberNumber:
+          type: integer
+          default: 0
+        genre:
+          type: string
+          description: genre of the live show
+
+        videoUrl:
+          type: string
+      xml:
+        name: LiveShow
+    ReviewComment:
+      type: object
+      properties:
+        comment:
+          type: string
+        commentedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data who commented on review
+        commentId:
+          # type: object
+          $ref: '#/components/schemas/Comment'
+          description: replied comment ID/ comment data on a review comment
+        reviewId:
+          # type: object
+          $ref: '#/components/schemas/UserReview'
+          description: Review ID/ review data from which this review comment belongs
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: ReviewComment
+    Room:
+      type: object
+      properties:
+        participants:
+          type: array
+          description: List of the User ID/ user data which are the member of this room
+          items: 
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: User ID/ user data from the room
+        lastMessage:
+          type: object
+          description: last message of the group
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: Room
+    TicketRequest:
+      type: object
+      properties:
+        postId:
+          # type: object
+          $ref: '#/components/schemas/Post'
+          description: post ID/ post data of ticket post of which this ticket request belongs
+        postedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data, who posted the ticket post
+        requestedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data, who send the request for the ticket
+        bookingStatus:
+          type: string
+          default: pending
+          description: status of the request ticket
+        showTimeFrom:
+          type: date-time
+        showTimeTo:
+          type: date-time
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: TicketRequest
+    UserGenrePreference:
+      type: object
+      properties:
+        user:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data 
+        Action:
+          type: integer
+          default: 0
+        Comedy:
+          type: integer
+          default: 0
+        Horror:
+          type: integer
+          default: 0
+        Romance:
+          type: integer
+          default: 0
+        Documentary:
+          type: integer
+          default: 0
+        Adventure:
+          type: integer
+          default: 0
+        Animation:
+          type: integer
+          default: 0
+        Drama:
+          type: integer
+          default: 0
+        Crime:
+          type: integer
+          default: 0
+        Family:
+          type: integer
+          default: 0
+        Fantasy:
+          type: integer
+          default: 0
+        History:
+          type: integer
+          default: 0
+        Music:
+          type: integer
+          default: 0
+        Mystry:
+          type: integer
+          default: 0
+        SciFi:
+          type: integer
+          default: 0
+        TV:
+          type: integer
+          default: 0
+        Thriller:
+          type: integer
+          default: 0
+        War:
+          type: integer
+          default: 0
+        Western:
+          type: integer
+          default: 0
+      xml:
+        name: UserGenrePreference
+    UserReview:
+      type: object
+      properties:
+        movieId:
+          type: integer
+        reviewBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User ID/ user data who posted review
+        rate:
+          type: integer
+        likeCount:
+          type: integer
+          default: 0
+        likes:
+          type: array
+          description: List of all User who liked on user review
+          items:
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: user ID/ user data who like the user review
+        dislikes:
+          type: array
+          description: List of all User who disliked on user review
+          items:
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: user ID/ user data who dislike the user review
+        dislikesCount:
+          type: integer
+          default: 0
+        commentCount:
+          type: integer
+          default: 0
+        comments:
+          type: array
+          description: List of all comment on the user review
+          items:
+            # type: object
+            $ref: '#/components/schemas/ReviewComment'
+            description: review comment ID/ review comment details who commented on the user review
+        description:
+          type: string
+          description: description of a review
+        createdAt:
+          type: date-time
+        updatedAt:  
+          type: date-time
+      xml:
+        name: UserReview
+    WatchList:
+      type: object
+      properties:
+        movieId:
+          type: integer
+        watchlistedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: user ID/ user detail who added in WatchList
+        movieTitle:
+          type: string
+        overview:
+          type: string
+        moviePoster:
+          type: string
+        releaseDate:
+          type: string
+        genreId:
+          type: array
+          description: List of all genre IDs
+          items: 
+            type: integer
+            description: Genre ID which refer to the genre name
+        createdAt:
+          type: date-time
+        updatedAt:
+          type: date-time
+      xml:
+        name: WatchList 
+    Comment:
+      type: object
+      xml:
+        name: Comment
+      properties:
+        likeComment:
+          type: integer
+          default: 0
+        likes:
+          type: array
+          description: list of all user who like the comment
+          items:
+            # type: object
+            $ref: '#/components/schemas/User'
+            description: user details who liked the comment
+        comment:
+          type: string
+        commentedBy:
+          # type: object
+          $ref: '#/components/schemas/User'
+          description: User detail who created the comment
+        commentId:
+          # type: object
+          $ref: '#/components/schemas/Comment'
+          description: replied comment details
+        postId:
+          # type: object
+          $ref: '#/components/schemas/Post'
+          description: post ID/ post details from which the comment belong
+        postType:
+          type: string
+        moviePoster:
+          type: string
+        releaseYear:
+          type: string
+        genreId:
+          type: array
+          description: list of genre id
+          items:
+            type: integer
+            description: each number refer to a genre name
+        overview:
+          type: string
+        movieTitle:
+          type: string
+        movieId:
+          type: integer    
+        createdAt:
+          type: date-time
+        updatedAt:  
+          type: date-time

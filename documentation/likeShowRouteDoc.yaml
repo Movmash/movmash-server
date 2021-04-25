@@ -1,0 +1,97 @@
+tags:
+- name: liveShow
+  description: All operation which is directly related to the LiveShow model 
+paths:
+  /api/v1/live/get-live-show-details/{roomCode}: #getLiveShowDetails
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - liveShow
+        parameters:
+        - name: roomCode
+          in: path
+          required: true
+          description: Type your room code to get the room information
+          type: string
+        responses:
+          default:
+            description: successfull
+  /api/v1/live/get-all-live-show: #getAllLiveShow
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - liveShow
+        responses:
+          default:
+            description: successfull
+  /api/v1/live/get-followings-live-show: #getFollowingsLiveShow
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - liveShow
+        responses:
+          default:
+            description: successfull
+  /api/v1/live/get-genre-live-show/{genre}: #getGenreLiveShow
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - liveShow
+        parameters:
+        - name: genre
+          in: path
+          type: string
+          required: true
+          description: Type the genre name to get genre related room list
+        responses:
+          default:
+            description: successfull
+  /api/v1/live/create-live-show: #createLiveShow
+    post:
+        security:
+        - bearerAuth: []
+        tags:
+        - liveShow
+        description: Create your new room
+        required: true
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+                  posterUrl:
+                    type: string
+                  privacy:
+                    type: string
+                  roomTitle:
+                    type: string
+                  genre:
+                    type: string
+                  videoUrl:
+                    type: string  
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+                  posterUrl:
+                    type: string
+                  privacy:
+                    type: string
+                  roomTitle:
+                    type: string
+                  genre:
+                    type: string
+                  videoUrl:
+                    type: string  
+        responses:
+          default:
+            description: successfull

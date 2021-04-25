@@ -1,0 +1,248 @@
+
+tags:
+- name: user
+  description: All operation which is directly related to the user model 
+paths:
+  /api/v1/home/signup: #signup
+    post:
+      tags:
+      - user
+      summary: Create new user
+      description: Sign up the new user by providing all neccessary details and return the new created user's token and it's details in an object
+      requestBody:
+        description: Create your new user
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                confirmPassword:
+                  type: string
+          application/xml:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                confirmPassword:
+                  type: string        
+      responses:
+        default:
+          description: successfull operation
+
+  /api/v1/home/login: #login
+    post:
+      tags:
+      - user
+      summary: Login through credential
+      description: Login the user through user credential and return the new created user's token and it's details in an object
+      requestBody:
+        description: login with the following credential
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              properties: 
+                email:
+                  type: string
+                password:
+                  type: string  
+          application/xml:
+            schema:
+              type: object
+              properties: 
+                email:
+                  type: string
+                password:
+                  type: string        
+      responses:
+        default:
+          description: successfull login  
+          content: {}
+
+  /api/v1/home/user/{id}: # get user detail
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - user        
+      summary: Get user detail by using user ID
+      description: Return an object having all neccessary detail of perticular user
+      parameters:
+      - name: id
+        in: path
+        description: type the user id to get the detail of that user 
+        required: true
+        true: string
+      responses:
+        default:
+          description: successfull
+
+  /api/v1/home/mash-user-details/{userName}: #get mash user
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - user 
+      summary: Get user detail by using username
+      description: Return an object having all neccessary detail of perticular user
+      parameters:
+      - name: userName
+        in: path
+        description: type the userName to get the detail of that user 
+        required: true
+        true: string
+      responses:
+        default:
+          description: successfull       
+
+  /api/v1/home/user/follow: #followUser
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - user 
+      summary: Follow the user
+      description: Return the user detail of that user who get followed in an object
+      requestBody:
+        description: Body should contain the user id to follow that user
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                followId:
+                  type: string
+                  required: true
+                  description: type the user ID
+          application/xml:
+            schema:
+              type: object
+              properties:
+                followId:
+                  type: string
+                  required: true
+                  description: type the user ID
+      responses:
+        default:
+          description: successfully follow      
+
+  /api/v1/home/user/unfollow: #unfollowUser
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - user 
+      summary: Unfollow the user
+      description: Return the user detail of that user who get unfollowed in an object
+      requestBody:
+        description: Body should contain the user id to unfollow that user
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                unfollowId:
+                  type: string
+                  required: true
+                  description: type the user ID
+          application/xml:
+            schema:
+              type: object
+              properties:
+                unfollowId:
+                  type: string
+                  required: true
+                  description: type the user ID
+      responses:
+        default:
+          description: successfully unfollow      
+  
+  /api/v1/home/update-user-details: #updateUserDetails
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - user 
+      summary: Update user information
+      description: Updating user information such as username, fullName, bio and genre and return the new update user details in an object
+      requestBody: 
+        description: Body should contain any field which is going to be updated
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  userName:
+                    type: string
+                  genre:
+                    type: string
+                  bio:
+                    type: string
+                  fullName: 
+                    type: string  
+          application/xml:
+              schema:
+                type: object
+                properties:
+                  userName:
+                    type: string
+                  genre:
+                    type: string
+                  bio:
+                    type: string
+                  fullName: 
+                    type: string  
+      responses:
+        default:
+          description:
+            updated: successfully                
+
+  /api/v1/home/get-user: #getUser
+    get:
+      security:
+      - bearerAuth: [] 
+      tags:
+      - user
+      summary: Get the details of user who is loggedIn
+      description: Get all the details of the user who is loggegIn and return user detail in an object
+      responses:
+        200:
+          description: your user detail
+        default:
+          description: login user detail
+          content: {}
+
+  /api/v1/home/get-followings: #getFollowingsDetails
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - user  
+      summary: Get list of followings who is loggedIn
+      description: Return an array of all the followings of user who is currently loggedIn 
+      responses:
+          200:
+            description: Success
+
+  /api/v1/home/get-followers: #getFollowersDetails
+    get:
+      security:
+      - bearerAuth: [] 
+      tags:
+      - user
+      summary: Get list of followers who is loggedIn
+      description: Return an array of all the followers of user who is currently loggedIn 
+      responses:
+          200:
+            description: Success

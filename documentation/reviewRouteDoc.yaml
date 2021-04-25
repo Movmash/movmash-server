@@ -1,0 +1,51 @@
+tags:
+- name: UserReview
+  description: All operation which is directly related to the UserReview model 
+paths:
+  /api/v1/movie/post-user-review: #postUserReview
+    post:
+        security:
+        - bearerAuth: []
+        tags:
+        - UserReview
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: string
+                  rate:
+                    type: string
+                  description: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  movieId:
+                    type: string
+                  rate:
+                    type: string
+                  description: 
+                    type: string
+        responses:
+          default:
+            description: successfull  
+  /api/v1/movie/movie-rated-status/{movieId}: #movieRatedStatus
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - UserReview
+        parameters:
+        - name: movieId
+          in: path
+          type: string
+          required: true
+          description: Type the movie ID to get the status of a movie
+        responses:
+          default:
+            description: successfull  
+  
