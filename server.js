@@ -121,7 +121,7 @@ const swaggerOption = {
     openapi: "3.0.0",
     info: {
       title: "Movmash API",
-      version: "1.0.2",
+      version: "1.0.3",
       description:
         "Welcome to the Movmash API documentation. Please go through all the doc mention below.",
     },
