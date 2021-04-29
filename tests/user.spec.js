@@ -23,7 +23,7 @@ describe("TEST OF USER", () => {
     })
     test("LOGIN USER", async () => {
       const response = await axios.post("/api/v1/home/login", {
-        email: "mrankur801@gmail.com",
+        email: "test@test.com",
         password: "12345",
       });
       const { data, status } = response;

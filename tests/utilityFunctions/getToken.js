@@ -2,7 +2,7 @@ const axios = require("../../axiosTest");
 
 module.exports = async () => {
     const response = await axios.post("/api/v1/home/login", {
-      email: "mrankur801@gmail.com",
+      email: "test@test.com",
       password: "12345",
     });
 
