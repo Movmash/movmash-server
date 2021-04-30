@@ -86,5 +86,5 @@ To learn about all endpoints of this API go through this link `http://localhost:
 
 ### Contribution
 
-For Contribution,you should be a member of our Movmash team. Send us your request and become a part of our team.
+For Contribution, you should be a member of our Movmash team. Send us your request and become a part of our team.
 
