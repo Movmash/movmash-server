@@ -722,7 +722,6 @@ app.set("socketio", io);
 //......................................[Server database connection].......................
 mongoose
   .connect(process.env.DB_URI, {
-    // useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
