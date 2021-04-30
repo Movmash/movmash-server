@@ -149,11 +149,6 @@ app.use(express.json());
 //....................................................................................
 
 const db = mongoose.connection;
-// db.once("open", () => {
-//   console.log("mashDB is now connected");
-//   require("./triggers/triggers");
-// });
-
 //....................................................................................
 app.get("/api/v1/movie/search-movie", searchMovie);
 
@@ -727,7 +722,6 @@ app.set("socketio", io);
 //......................................[Server database connection].......................
 mongoose
   .connect(process.env.DB_URI, {
-    // useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
