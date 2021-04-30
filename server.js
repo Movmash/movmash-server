@@ -115,6 +115,7 @@ const {
   searchTicket,
   searchList,
 } = require("./routes/searchRoutes");
+const chalk = require("chalk");
 //.....................................[swagger option]...............................
 const swaggerOption = {
   swaggerDefinition: {
@@ -144,14 +145,6 @@ app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
 // app.use("/peerjs", peerServer);
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
 app.use(express.json());
-mongoose
-  .connect(process.env.DB_URI, {
-    // useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Connected"))
-  .catch((e) => console.log(e));
 
 //....................................................................................
 
@@ -319,7 +312,7 @@ app.put(
 //.................................... web sockets .........................................
 
 db.once("open", () => {
-  console.log("mashDB is now connected");
+  console.log(chalk.hex("#fab95b").bold("🚀 Change stream activated 📗"));
   require("./triggers/triggers");
 
   ///...................................
@@ -731,6 +724,20 @@ io.on("connection", (socket) => {
 });
 const port = process.env.PORT || 8000;
 app.set("socketio", io);
-server.listen(port, () => {
-  console.log(`the server is started at port ${port}`);
-});
+//......................................[Server database connection].......................
+mongoose
+  .connect(process.env.DB_URI, {
+    // useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    server.listen(port, () => {
+      console.log(
+        chalk.hex("#fab95b").bold(`🚀 Server ready at http://localhost:${port} 📗`)
+      );
+      console.log( chalk.hex("#fab95b").bold("🚀 MashDB is now connected 📗"));
+    });
+  })
+  .catch((e) => console.log(e));
+
