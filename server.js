@@ -304,7 +304,7 @@ app.put(
   mashDBAuth,
   markRequestedTicketConfirmed
 );
-//.................................... web sockets .........................................
+//.................................... [web sockets] .........................................
 
 db.once("open", () => {
   console.log(chalk.hex("#fab95b").bold("🚀 Change stream activated 📗"));
