@@ -13,7 +13,7 @@
     "url": "git+https://github.com/KunalAnkur/movmash-server.git"
   },
   "author": "Ankur Kunal",
-  "license": "ISC",
+  "license": "GNU General Public License v3.0",
   "bugs": {
     "url": "https://github.com/KunalAnkur/movmash-server/issues"
   },
