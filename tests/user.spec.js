@@ -50,4 +50,58 @@ describe("TEST OF USER", () => {
         );
         expect(status).toBe(200);
     })
+    test("GET MASH USER DETAIL", async () => {
+      const response = await axios.get(`/api/v1/home/mash-user-details/test`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/plain",
+        },
+      });
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          email: expect.any(String),
+        })
+      );
+      expect(status).toBe(200);
+    });
+    test("GET LOGIN USER DETAIL", async () => {
+      const response = await axios.get(`/api/v1/home/get-user`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/plain",
+        },
+      });
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          email: expect.any(String),
+        })
+      );
+      expect(status).toBe(200);
+    });
+    test("GET FOLLOWINGS", async () => {
+      const response = await axios.get(`/api/v1/home/get-followings`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/plain",
+        },
+      });
+      const { data, status } = response;
+      expect(Array.isArray(data)).toBeTruthy();
+      expect(status).toBe(200);
+    });
+    test("GET FOLLOWERS", async () => {
+      const response = await axios.get(`/api/v1/home/get-followers`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/plain",
+        },
+      });
+      const { data, status } = response;
+      expect(Array.isArray(data)).toBeTruthy();
+      expect(status).toBe(200);
+    });
 })
