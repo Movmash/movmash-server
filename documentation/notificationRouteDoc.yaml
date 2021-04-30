@@ -1,0 +1,36 @@
+tags:
+- name: notifications
+  description: All operation which is directly related to the Notification model 
+paths:
+  /api/v1/home/user/read-notification: #markNotificationRead
+    put:
+        security:
+        - bearerAuth: []
+        tags:
+        - notifications
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: Notification ID
+            application/xml:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: Notification ID      
+        responses:
+          default:
+            description: successfull
+  /api/v1/home/get-notification: #getAllNotifications
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - notifications
+        responses:
+          default:
+            description: successfull

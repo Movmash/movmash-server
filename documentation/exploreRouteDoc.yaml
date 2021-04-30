@@ -1,0 +1,23 @@
+tags:
+- name: explore
+  description: All operation which is directly related to the UserGenrePreference model 
+paths:
+  /api/v1/explore/get-user-recommendation: #getUserRecommendation
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - explore
+        responses:
+          default:
+            description: successfull
+  /api/v1/explore/get-explore-post: #getExplorePosts
+    get:
+        security:
+        - bearerAuth: []
+        tags:
+        - explore
+        responses:
+          default:
+            description: successfull
+  

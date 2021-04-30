@@ -1,0 +1,315 @@
+tags:
+- name: post
+  description: All operation which is directly related to the post model
+paths:
+  /api/v1/home/post: #postOnePosts
+    post:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Post'
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/like-post: #likePost
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/unlike-post: #unlikePost
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/delete-post/{postId}: #deletePost
+    delete:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        type: string
+        description: Type post ID to delete the post
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/getSubPost: #getSubscribedPost
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/myPost: #getMyPost
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/comment-post: #postComment
+    post:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+                  comment:
+                    type: string
+                  postType:
+                    type: string    
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+                  comment:
+                    type: string
+                  postType:
+                    type: string    
+      
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/delete-comment/{commentId}: #deleteComment
+    delete:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      parameters:
+      - name: commentId
+        in: path
+        required: true
+        type: string
+        description: Type the comment ID to delete the comment
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/like-comment: #likeComment
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commentId: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  commentId: 
+                    type: string
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/unlike-comment: #unlikeComment
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  commentId: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  commentId: 
+                    type: string
+      
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/get-post-comment: #getPostComments
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  postId: 
+                    type: string
+      responses:
+          default:
+            description: successfull
+  /api/v1/home/mash-user-post/{userName}: #getMashUserPost
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      parameters:
+      - name: userName
+        in: path
+        required: true
+        type: string
+        description: Type the username whose posts you wanna see
+      responses:
+          default:
+            description: successfull
+  /api/v1/bookingTicket/send-booking-request: #sendBookingRequest
+    post:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/TicketRequest'
+      
+      responses:
+          default:
+            description: successfull
+  /api/v1/bookingTicket/get-requested-ticket: #getRequestedTicket
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      responses:
+          default:
+            description: successfull
+  /api/v1/bookingTicket/cancel-requested-ticket/{postId}: #cancelRequestedTicket
+    delete:
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: postId
+        in: path
+        type: string
+        description: Type post Id to cancel that ticket
+        required: true
+      tags:
+      - post
+      responses:
+          default:
+            description: successfull
+  /api/v1/bookingTicket/mark-ticket-confirm: #markRequestedTicketConfirmed
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - post
+      requestBody:
+          description: createNewList
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketId: 
+                    type: string
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  ticketId: 
+                    type: string
+      responses:
+          default:
+            description: successfull

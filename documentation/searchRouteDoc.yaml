@@ -1,0 +1,49 @@
+tags:
+- name: search
+  description: All operation which is directly related to the User, Post and List model 
+paths:
+  /api/v1/search-user: #searchUser
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - search
+        parameters:
+        - name: search
+          in: query
+          type: string
+          required: true
+          description: Type the query to get the search result about user
+        responses:
+          default:
+            description: successfull 
+  /api/v1/search-ticket: #searchTicket
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - search
+        parameters:
+        - name: search
+          in: query
+          type: string
+          required: true
+          description: Type the query to get the search result about Ticket
+        responses:
+          default:
+            description: successfull 
+  /api/v1/search-list: #searchList
+      get:
+        security:
+        - bearerAuth: []
+        tags:
+        - search
+        parameters:
+        - name: search
+          in: query
+          type: string
+          required: true
+          description: Type the query to get the search result about List
+        responses:
+          default:
+            description: successfull 

@@ -2,6 +2,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.org/Movmash/movmash-server.svg?branch=development)](https://travis-ci.org/Movmash/movmash-server)
 
+
 ![Screenshot from 2021-04-26 14-46-05](https://user-images.githubusercontent.com/57923976/116059206-3b029280-a69e-11eb-9be4-ef5b89247674.png)
 
 
@@ -85,6 +86,8 @@ Follow these steps to get the api running using npm
 To learn about all endpoints of this API go through this link `http://localhost:8000/api-docs/` after running the local server 
 
 ### Contribution
+
+For Contribution, you should be a member of our Movmash team. Send us your request and become a part of our team.
 
 For Contribution, you should be a member of our Movmash team. Send us your request and become a part of our team.
 

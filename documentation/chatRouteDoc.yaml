@@ -1,0 +1,66 @@
+tags:
+- name: chat
+  description: All operation which is directly related to the Coversation and Room model 
+paths:
+  /api/v1/home/get-user-rooms: #getAllUserRooms
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - chat
+      responses:
+        default:
+          description: successfull 
+  /api/v1/home/mark-chatRoom-read: #markChatRoomRead
+    put:
+      security:
+      - bearerAuth: []
+      tags:
+      - chat 
+      requestBody:
+        description: Body should contain the room id to mark room read
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roomId:
+                  type: string
+                  required: true
+                  description: type the room ID
+          application/xml:
+            schema:
+              type: object
+              properties:
+                roomId:
+                  type: string
+                  required: true
+                  description: type the room ID
+      responses:
+        default:
+          description: successfull 
+  /api/v1/home/get-unread-rooms: #getUnreadRooms
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - chat 
+      responses:
+        default:
+          description: successfull 
+  /api/v1/home/get-rooms-messages/{roomId}: #getRoomsMessages
+    get:
+      security:
+      - bearerAuth: []
+      tags:
+      - chat 
+      parameters:
+      - name: roomId
+        in: path
+        type: string
+        required: true
+        description: Type room Id whose message you wanna want
+      responses:
+        default:
+          description: successfull 
