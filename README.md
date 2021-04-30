@@ -88,3 +88,6 @@ To learn about all endpoints of this API go through this link `http://localhost:
 
 For Contribution, you should be a member of our Movmash team. Send us your request and become a part of our team.
 
+### License & Copyright
+
+`© Copyright 2021 Ankur Kunal, Movmash`
