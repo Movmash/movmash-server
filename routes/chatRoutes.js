@@ -1,9 +1,3 @@
-// const http = require("http");
-// const express = require("express");
-// const app = express();
-// const server = http.createServer(app);
-// const socketio = require("socket.io");
-// const io = socketio(server);
 const Room = require("../models/roomModel");
 const Conversation = require("../models/conversationModel");
 exports.getAllUserRooms = (req, res) => {

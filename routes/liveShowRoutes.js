@@ -26,7 +26,6 @@ exports.getFollowingsLiveShow = (req, res) => {
   User.findById(req.user._id)
     .select("followings")
     .then((data) => {
-      // console.log(data);
       LiveShow.find({
         $or: [{ host: data.followings }, { host: req.user._id }],
       })
@@ -92,15 +91,4 @@ exports.createLiveShow = (req, res) => {
     .catch((e) => {
       console.log(e);
     });
-  // LiveShow.create(liveShowDetail)
-  //   .then((data) => {
-  // LiveShow.findById(data._id)
-  //   .populate("host", "userName profileImageUrl fullName")
-  //   .then((doc) => {
-  //     return res.status(201).json(doc);
-  //   });
-  //   })
-  //   .catch((e) => {
-  //     return res.status(500).json(e);
-  //   });
 };
