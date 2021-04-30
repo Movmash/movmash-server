@@ -25,8 +25,6 @@ const io = socketio(server);
 //   generateClientId: customGenerationFunction,
 // });
 require("dotenv").config();
-// const requests = require("./requests.js");
-// const axios = require("./axios.js");
 const LiveShow = require("./models/liveShowModel");
 const Conversation = require("./models/conversationModel");
 const Notification = require("./models/notificationModel");
