@@ -160,28 +160,33 @@ exports.likePost = (req, res) => {
             if (err) return res.status(422).json({ error: err });
             else return res.status(201).json(result);
           });
-    
         }
       }
     }
   );
- 
 };
 
 exports.unlikePost = (req, res) => {
   Like.findOneAndDelete({ postId: req.body.postId, likedBy: req.user._id })
-    .then(() => {
-      Post.findByIdAndUpdate(
-        req.body.postId,
-        {
-          $pull: { likes: req.user._id },
-          $inc: { likeCount: -1 },
-        },
-        { new: true }
-      ).exec((err, result) => {
-        if (err) return res.status(422).json({ error: err });
-        else return res.status(201).json(result);
-      });
+    .then((docs) => {
+      if (docs === null) {
+        Post.findById(req.body.postId).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          else return res.status(201).json(result);
+        });
+      } else {
+        Post.findByIdAndUpdate(
+          req.body.postId,
+          {
+            $pull: { likes: req.user._id },
+            $inc: { likeCount: -1 },
+          },
+          { new: true }
+        ).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          else return res.status(201).json(result);
+        });
+      }
     })
     .catch((e) => {
       console.log(e);
