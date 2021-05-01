@@ -120,7 +120,6 @@ describe("TEST OF USER", () => {
         fullName: "This is test Fullname",
       });
       const { data, status } = response;
-      console.log(response)
       expect(data).toEqual(
         expect.objectContaining({
           _id: expect.any(String),

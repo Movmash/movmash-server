@@ -7,6 +7,5 @@ module.exports = async () => {
     });
 
     const {data} = response;
-
-    return data.idToken;
+    return {token: data.idToken, username: data.user.userName, userId: data.user._id};
 }

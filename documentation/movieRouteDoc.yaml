@@ -139,6 +139,8 @@
               schema:
                 type: object
                 properties:
+                  id:
+                    type: string
                   movieList:
                     type: array
                     items:
@@ -157,6 +159,8 @@
               schema:
                 type: object
                 properties:
+                  id:
+                    type: string
                   movieList:
                     type: array
                     items:
