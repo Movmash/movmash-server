@@ -1,6 +1,5 @@
 const axios = require('../axiosTest');
 const getUser = require("./utilityFunctions/getloginUserData");
-
 let listId;
 let username
 beforeAll(async () => {
