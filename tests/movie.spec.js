@@ -109,7 +109,7 @@ describe('TEST OF MOVIES', () => {
 
       expect(data).toEqual(
           expect.objectContaining({
-              mesg: expect.any(String) //spelling mistake
+              message: expect.any(String)
           })
       );
       expect(status).toBe(201);
@@ -130,20 +130,19 @@ describe('TEST OF MOVIES', () => {
       expect(status).toBe(200);
     });
 
-    // test("GET MASH USER LIKE DISLIKE MOVIELIST", async () => {
-    //   const response = await axios.get(
-    //     `/api/v1/movie/get-mash-user-like-dislike-movielist/${username}`
-    //   );
-    //   const { data, status } = response;
-    //     console.log(response)
-    //   expect(data).toEqual(
-    //     expect.objectContaining({
-    //       likedMovies: expect.any(Array),
-    //       dislikedMovies: expect.any(Array),
-    //     })
-    //   );
-    //   expect(status).toBe(200);
-    // });
+    test("GET MASH USER LIKE DISLIKE MOVIELIST", async () => {
+      const response = await axios.get(
+        `/api/v1/movie/get-mash-user-like-dislike-movielist/${username}`
+      );
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          likedMovies: expect.any(Array),
+          dislikedMovies: expect.any(Array),
+        })
+      );
+      expect(status).toBe(200);
+    });
 
     test("LIKE MOVIE", async () => {
       const response = await axios.post(`/api/v1/movie/like-movie`, {
@@ -182,7 +181,7 @@ describe('TEST OF MOVIES', () => {
           disliked: expect.any(Boolean),
         })
       );
-      expect(status).toBe(200);  //should be 201
+      expect(status).toBe(201);  
     });
 
     test("DISLIKE MOVIE", async () => {
@@ -202,21 +201,92 @@ describe('TEST OF MOVIES', () => {
           disliked: expect.any(Boolean),
         })
       );
-      expect(status).toBe(200); //should be 201
+      expect(status).toBe(201); 
     });
 
-    // test("UNDO LIKE MOVIE", async () => {  //Bug init when it send two time it gives internal server error
-    //   const response = await axios.post(`/api/v1/movie/undo-like-movie`, {
-    //     movieId: 24,
-    //   });
-    //   const { data, status } = response;
-    //   expect(data).toEqual(
-    //     expect.objectContaining({
-    //       liked: expect.any(Boolean),
-    //     })
-    //   );
-    //   expect(status).toBe(201); 
-    // });
-})
+    test("UNDO LIKE MOVIE", async () => { 
+      const response = await axios.post(`/api/v1/movie/undo-like-movie`, {
+        movieId: 24,
+      });
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          liked: expect.any(Boolean),
+        })
+      );
+      expect(status).toBe(201); 
+    });
 
-///api/v1/movie/get-user-like-dislike-movielist
+    test("UNDO DISLIKE MOVIE", async () => {
+      const response = await axios.post(`/api/v1/movie/undo-dislike-movie`, {
+        movieId: 24,
+      });
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          disliked: expect.any(Boolean),
+        })
+      );
+      expect(status).toBe(201);
+    });
+
+    test("GET USER WATCHLIST", async () => {
+      const response = await axios.get(`/api/v1/movie/get-user-watchList`);
+      const { data, status } = response;
+      expect(Array.isArray(data)).toBeTruthy();
+      expect(status).toBe(200);
+    });
+
+    test("GET MASH USER WATCHLIST", async () => {
+      const response = await axios.get(
+        `/api/v1/movie/get-mash-user-watchlist/${username}`
+      );
+      const { data, status } = response;
+      expect(Array.isArray(data)).toBeTruthy();
+      expect(status).toBe(200);
+    });
+
+    test("ADD MOVIE TO WATCHLIST", async () => {
+      const response = await axios.post(`/api/v1/movie/add-to-watchlist`, {
+        movieId: 26,
+        movieTitle: "TEST MOVIE TITLE",
+        overview: "TEST OVERVIEW",
+        moviePoster: "MOVIE_POST.jpeg",
+        releaseDate: "2012",
+        genreId: [1,23,5],
+      });
+      const { data, status } = response;
+      expect(data._doc).toEqual(   // bug ._doc it should in data
+        expect.objectContaining({
+          _id: expect.any(String),
+        })
+      );
+      expect(status).toBe(201);
+    });
+
+    test("REMOVE MOVIE FROM WATCHLIST", async () => {
+      const response = await axios.post(`/api/v1/movie/remove-from-watchlist`, {
+        movieId: 26,
+      });
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          inWatchlist: expect.any(Boolean),
+        })
+      );
+      expect(status).toBe(201);
+    });
+
+    test("GET MOVIE STATUS", async () => {
+      const response = await axios.get(`/api/v1/movie/movie-status/2`);
+      const { data, status } = response;
+      expect(data).toEqual(
+        expect.objectContaining({
+          inWatchlist: expect.any(Boolean),
+          liked: expect.any(Boolean),
+          disliked: expect.any(Boolean)
+        })
+      );
+      expect(status).toBe(200);
+    });
+})
