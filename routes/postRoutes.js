@@ -127,42 +127,66 @@ exports.postOnePosts = (req, res) => {
 };
 exports.likePost = (req, res) => {
   console.log("hell");
-  Like.create({
-    postId: req.body.postId,
-    likedBy: req.user._id,
-  })
-    .then((likeDoc) => {
-      Post.findByIdAndUpdate(
-        req.body.postId,
-        {
-          $push: { likes: req.user._id },
-          $inc: { likeCount: 1 },
-        },
-        { new: true }
-      ).exec((err, result) => {
-        if (err) return res.status(422).json({ error: err });
-        else return res.status(201).json(result);
-      });
-    })
-    .catch((e) => {
-      console.log(e);
-    });
+  Like.exists(
+    { postId: req.body.postId, likedBy: req.user._id },
+    function (err, docs) {
+      if (err) {
+        return res.status(422).json({ error: err });
+      } else {
+        if (!docs) {
+          Like.create({
+            postId: req.body.postId,
+            likedBy: req.user._id,
+          })
+            .then((likeDoc) => {
+              Post.findByIdAndUpdate(
+                req.body.postId,
+                {
+                  $push: { likes: req.user._id },
+                  $inc: { likeCount: 1 },
+                },
+                { new: true }
+              ).exec((err, result) => {
+                if (err) return res.status(422).json({ error: err });
+                else return res.status(201).json(result);
+              });
+            })
+            .catch((e) => {
+              console.log(e);
+              return res.status(422).json({ error: e });
+            });
+        } else {
+          Post.findById(req.body.postId).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            else return res.status(201).json(result);
+          });
+        }
+      }
+    }
+  );
 };
 
 exports.unlikePost = (req, res) => {
   Like.findOneAndDelete({ postId: req.body.postId, likedBy: req.user._id })
-    .then(() => {
-      Post.findByIdAndUpdate(
-        req.body.postId,
-        {
-          $pull: { likes: req.user._id },
-          $inc: { likeCount: -1 },
-        },
-        { new: true }
-      ).exec((err, result) => {
-        if (err) return res.status(422).json({ error: err });
-        else return res.status(201).json(result);
-      });
+    .then((docs) => {
+      if (docs === null) {
+        Post.findById(req.body.postId).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          else return res.status(201).json(result);
+        });
+      } else {
+        Post.findByIdAndUpdate(
+          req.body.postId,
+          {
+            $pull: { likes: req.user._id },
+            $inc: { likeCount: -1 },
+          },
+          { new: true }
+        ).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          else return res.status(201).json(result);
+        });
+      }
     })
     .catch((e) => {
       console.log(e);

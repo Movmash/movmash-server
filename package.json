@@ -4,15 +4,16 @@
   "description": "multimedia social network api",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "test": "jest",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KunalAnkur/movmash-server.git"
   },
   "author": "Ankur Kunal",
-  "license": "ISC",
+  "license": "GNU General Public License v3.0",
   "bugs": {
     "url": "https://github.com/KunalAnkur/movmash-server/issues"
   },
@@ -25,9 +26,11 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jest": "^26.6.3",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.12.4",
     "peer": "^0.6.1",
+    "shortid": "^2.2.16",
     "socket.io": "^2.4.1",
     "swagger-jsdoc": "^6.0.0",
     "swagger-ui-express": "^4.1.6",

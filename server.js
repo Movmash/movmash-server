@@ -25,8 +25,6 @@ const io = socketio(server);
 //   generateClientId: customGenerationFunction,
 // });
 require("dotenv").config();
-// const requests = require("./requests.js");
-// const axios = require("./axios.js");
 const LiveShow = require("./models/liveShowModel");
 const Conversation = require("./models/conversationModel");
 const Notification = require("./models/notificationModel");
@@ -145,23 +143,10 @@ app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
 // app.use("/peerjs", peerServer);
 app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
 app.use(express.json());
-// mongoose
-//   .connect(process.env.DB_URI, {
-//     // useCreateIndex: true,
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//   })
-//   .then(() => console.log("Connected"))
-//   .catch((e) => console.log(e));
 
 //....................................................................................
 
 const db = mongoose.connection;
-// db.once("open", () => {
-//   console.log("mashDB is now connected");
-//   require("./triggers/triggers");
-// });
-
 //....................................................................................
 app.get("/api/v1/movie/search-movie", searchMovie);
 
@@ -317,7 +302,7 @@ app.put(
   mashDBAuth,
   markRequestedTicketConfirmed
 );
-//.................................... web sockets .........................................
+//.................................... [web sockets] .........................................
 
 db.once("open", () => {
   console.log(chalk.hex("#fab95b").bold("🚀 Change stream activated 📗"));
@@ -735,7 +720,6 @@ app.set("socketio", io);
 //......................................[Server database connection].......................
 mongoose
   .connect(process.env.DB_URI, {
-    // useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
