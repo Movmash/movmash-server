@@ -1,11 +1,11 @@
 const axios = require('../axiosTest');
-const getUser = require("./utilityFunctions/getloginUserData");
+const { getUser } = require("./utilityFunctions/getloginUserData");
 let listId;
-let username
-beforeAll(async () => {
-    const loginUserData = await getUser();
-    axios.defaults.headers.common["Authorization"] = loginUserData.token;
-    username = loginUserData.username
+let username;
+beforeEach(async () => {
+  const loginUserData = await getUser();
+  axios.defaults.headers.common["Authorization"] = loginUserData.token;
+  username = loginUserData.username
 })
 describe('TEST OF MOVIES', () => {
     test("GET MOVIE UPCOMING COVER", async () => {
