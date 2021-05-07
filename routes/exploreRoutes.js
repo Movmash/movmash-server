@@ -4,7 +4,6 @@ const { getPercent } = require("../util/getPercent");
 const Post = require("../models/postModel");
 exports.getUserRecommendation = (req, res) => {
   const results = [];
-  //   User.findById(req.user._id).then((user) => {
   User.find({})
     .select("_id")
     .then((otherUserId) => {
