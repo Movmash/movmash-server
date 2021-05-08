@@ -382,16 +382,28 @@ exports.deleteComment = (req, res) => {
     });
 };
 exports.likeComment = (req, res) => {
-  Comment.findByIdAndUpdate(
-    req.body.commentId,
-    {
-      $push: { likes: req.user._id },
-      $inc: { likeCount: 1 },
-    },
-    { new: true }
-  ).exec((err, result) => {
+  Comment.find({ likes: { $in: req.user._id } }, (err, docs) => {
     if (err) return res.status(422).json({ error: err });
-    return res.status(201).json(result);
+    else {
+      if (docs.length === 0) {
+        Comment.findByIdAndUpdate(
+          req.body.commentId,
+          {
+            $push: { likes: req.user._id },
+            $inc: { likeCount: 1 },
+          },
+          { new: true }
+        ).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          return res.status(201).json(result);
+        });
+      } else {
+        Comment.findById(req.body.commentId).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          return res.status(201).json(result);
+        });
+      }
+    }
   });
 };
 
