@@ -244,29 +244,46 @@ exports.getUser = (req, res) => {
 // };
 
 exports.followUser = (req, res) => {
-  User.findByIdAndUpdate(
-    req.body.followId,
-    { $push: { followers: req.user._id }, $inc: { followersCount: 1 } },
-    { new: true }
-  ).exec((err, result) => {
-    if (err) return res.status(422).json(err);
-    User.findOneAndUpdate(
-      { _id: req.user._id },
-      {
-        $push: { followings: req.body.followId },
-        $inc: { followingsCount: 1 },
-      },
-      { new: true }
-    )
-      .select("-password")
-      .exec((err, doc) => {
-        if (err) {
-          console.log(err);
-          return res.status(503).json(err);
+  User.find(
+    {
+      $and: [{ _id: req.body.followId }, { followers: { $in: req.user._id } }],
+    },
+    (err, docs) => {
+      if (err) return res.status(503).json(err);
+      else {
+        if (docs.length == 0) {
+          User.findByIdAndUpdate(
+            req.body.followId,
+            { $push: { followers: req.user._id }, $inc: { followersCount: 1 } },
+            { new: true }
+          ).exec((err, result) => {
+            if (err) return res.status(422).json(err);
+            User.findOneAndUpdate(
+              { _id: req.user._id },
+              {
+                $push: { followings: req.body.followId },
+                $inc: { followingsCount: 1 },
+              },
+              { new: true }
+            )
+              .select("-password")
+              .exec((err, doc) => {
+                if (err) {
+                  
+                  return res.status(503).json(err);
+                }
+                return res.status(201).json(result);
+              });
+          });
+        } else {
+          User.findById(req.body.followId).exec((err, docs) => {
+            if (err) return res.status(503).json(err);
+            return res.status(201).json(docs);
+          });
         }
-        return res.status(201).json(result);
-      });
-  });
+      }
+    }
+  );
 };
 
 exports.unfollowUser = (req, res) => {
