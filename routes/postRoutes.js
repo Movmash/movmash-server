@@ -382,7 +382,7 @@ exports.deleteComment = (req, res) => {
     });
 };
 exports.likeComment = (req, res) => {
-  Comment.find({ likes: { $in: req.user._id } }, (err, docs) => {
+  Comment.find({$and :[{ _id: req.body.commentId },{ likes: { $in: req.user._id } }]}, (err, docs) => {
     if (err) return res.status(422).json({ error: err });
     else {
       if (docs.length === 0) {
