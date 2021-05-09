@@ -269,7 +269,6 @@ exports.followUser = (req, res) => {
               .select("-password")
               .exec((err, doc) => {
                 if (err) {
-                  
                   return res.status(503).json(err);
                 }
                 return res.status(201).json(result);
@@ -287,30 +286,53 @@ exports.followUser = (req, res) => {
 };
 
 exports.unfollowUser = (req, res) => {
-  console.log("heelll yyaa");
-  User.findByIdAndUpdate(
-    req.body.unfollowId,
-    { $pull: { followers: req.user._id }, $inc: { followersCount: -1 } },
-    { new: true },
-    (err, doc) => {
+  User.find(
+    {
+      $and: [
+        { _id: req.body.unfollowId },
+        { followers: { $in: req.user._id } },
+      ],
+    },
+    (err, docs) => {
       if (err) return res.status(422).json(err);
-      User.findByIdAndUpdate(
-        { _id: req.user._id },
-        {
-          $pull: { followings: req.body.unfollowId },
-          $inc: { followingsCount: -1 },
-        },
-        { new: true }
-      )
-        .select("-password")
-        .then((result) => {
-          return res.status(201).json(doc);
-        })
-        .catch((e) => {
-          return res.status(422).json({ error: err });
-        });
+      else {
+        if (docs.length === 1) {
+          User.findByIdAndUpdate(
+            req.body.unfollowId,
+            {
+              $pull: { followers: req.user._id },
+              $inc: { followersCount: -1 },
+            },
+            { new: true },
+            (err, doc) => {
+              if (err) return res.status(422).json(err);
+              User.findByIdAndUpdate(
+                { _id: req.user._id },
+                {
+                  $pull: { followings: req.body.unfollowId },
+                  $inc: { followingsCount: -1 },
+                },
+                { new: true }
+              )
+                .select("-password")
+                .then((result) => {
+                  return res.status(201).json(doc);
+                })
+                .catch((e) => {
+                  return res.status(422).json({ error: err });
+                });
+            }
+          );
+        } else {
+          User.findById(req.body.unfollowId).exec((err, docs) => {
+            if (err) return res.status(503).json(err);
+            return res.status(201).json(docs);
+          });
+        }
+      }
     }
   );
+ 
 };
 
 exports.getFollowersDetails = (req, res) => {
