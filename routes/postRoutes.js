@@ -160,28 +160,33 @@ exports.likePost = (req, res) => {
             if (err) return res.status(422).json({ error: err });
             else return res.status(201).json(result);
           });
-    
         }
       }
     }
   );
- 
 };
 
 exports.unlikePost = (req, res) => {
   Like.findOneAndDelete({ postId: req.body.postId, likedBy: req.user._id })
-    .then(() => {
-      Post.findByIdAndUpdate(
-        req.body.postId,
-        {
-          $pull: { likes: req.user._id },
-          $inc: { likeCount: -1 },
-        },
-        { new: true }
-      ).exec((err, result) => {
-        if (err) return res.status(422).json({ error: err });
-        else return res.status(201).json(result);
-      });
+    .then((docs) => {
+      if (docs === null) {
+        Post.findById(req.body.postId).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          else return res.status(201).json(result);
+        });
+      } else {
+        Post.findByIdAndUpdate(
+          req.body.postId,
+          {
+            $pull: { likes: req.user._id },
+            $inc: { likeCount: -1 },
+          },
+          { new: true }
+        ).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          else return res.status(201).json(result);
+        });
+      }
     })
     .catch((e) => {
       console.log(e);
@@ -377,28 +382,55 @@ exports.deleteComment = (req, res) => {
     });
 };
 exports.likeComment = (req, res) => {
-  Comment.findByIdAndUpdate(
-    req.body.commentId,
-    {
-      $push: { likes: req.user._id },
-      $inc: { likeCount: 1 },
-    },
-    { new: true }
-  ).exec((err, result) => {
+  Comment.find({$and :[{ _id: req.body.commentId },{ likes: { $in: req.user._id } }]}, (err, docs) => {
     if (err) return res.status(422).json({ error: err });
-    return res.status(201).json(result);
+    else {
+      if (docs.length === 0) {
+        Comment.findByIdAndUpdate(
+          req.body.commentId,
+          {
+            $push: { likes: req.user._id },
+            $inc: { likeCount: 1 },
+          },
+          { new: true }
+        ).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          return res.status(201).json(result);
+        });
+      } else {
+        Comment.findById(req.body.commentId).exec((err, result) => {
+          if (err) return res.status(422).json({ error: err });
+          return res.status(201).json(result);
+        });
+      }
+    }
   });
 };
 
 exports.unlikeComment = (req, res) => {
-  Comment.findByIdAndUpdate(
-    req.body.commentId,
-    { $pull: { likes: req.user._id }, $inc: { likeCount: -1 } },
-    { new: true }
-  ).exec((err, result) => {
-    if (err) return res.status(422).json({ error: err });
-    return res.status(201).json(result);
-  });
+  Comment.find(
+    { $and: [{ _id: req.body.commentId }, { likes: { $in: req.user._id } }] },
+    (err, docs) => {
+      if (err) return res.status(422).json({ error: err });
+      else {
+        if (docs.length === 1) {
+          Comment.findByIdAndUpdate(
+            req.body.commentId,
+            { $pull: { likes: req.user._id }, $inc: { likeCount: -1 } },
+            { new: true }
+          ).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            return res.status(201).json(result);
+          });
+        } else {
+          Comment.findById(req.body.commentId).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            return res.status(201).json(result);
+          });
+        }
+      }
+    }
+  );
 };
 
 exports.getPostComments = (req, res) => {

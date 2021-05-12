@@ -7,7 +7,6 @@ const User = require("../models/userModel");
 const requests = require("../requests.js");
 const axios = require("../axios.js");
 const List = require("../models/listModel");
-const { populate } = require("../models/userModel");
 exports.createNewList = (req, res) => {
   const newList = {
     createdBy: req.user,
@@ -89,7 +88,7 @@ exports.getMashUserList = (req, res) => {
 exports.deleteList = (req, res) => {
   List.findByIdAndDelete(req.params.listId)
     .then(() => {
-      return res.status(201).json({ mesg: "deleted sucessfully" });
+      return res.status(201).json({ message: "deleted sucessfully" });
     })
     .catch((e) => {
       console.log(e);
@@ -120,6 +119,8 @@ exports.getUserLikeDislikeMovielist = (req, res) => {
     });
 };
 exports.getMashUserLikeDislikeMovielist = (req, res) => {
+  console.log("...................................")
+  console.log(req.params.userName);
   User.findOne({ userName: req.params.userName })
     .sort("-createdAt")
     .then((user) => {
@@ -258,9 +259,8 @@ exports.dislikeMovie = (req, res) => {
             console.log(e);
           });
 
-        return res.json({ liked: false, disliked: true });
+        return res.status(201).json({ liked: false, disliked: true });
       });
-      //   return res.status(201).send(doc);
     })
     .catch((e) => {
       console.log(e);
@@ -275,6 +275,7 @@ exports.undoDislikeMovie = (req, res) => {
     dislikedBy: req.user._id,
   })
     .then((doc) => {
+      if(doc === null) return res.status(201).json({ disliked: false });
       const genreName = genreConverter(doc.genreId);
       const updatedGenre = { $inc: {} };
       for (let i = 0; i < genreName.length; i++) {
@@ -309,6 +310,7 @@ exports.undoLikeMovie = (req, res) => {
     likedBy: req.user._id,
   })
     .then((doc) => {
+      if(doc === null ) return res.status(201).json({ liked: false });
       const genreName = genreConverter(doc.genreId);
       const updatedGenre = { $inc: {} };
       for (let i = 0; i < genreName.length; i++) {
