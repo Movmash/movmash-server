@@ -25,6 +25,7 @@ const io = socketio(server);
 //   generateClientId: customGenerationFunction,
 // });
 require("dotenv").config();
+require("./OAuth/googleOAuth");
 const LiveShow = require("./models/liveShowModel");
 const Conversation = require("./models/conversationModel");
 const Notification = require("./models/notificationModel");
@@ -138,10 +139,20 @@ const swaggerOption = {
   servers: ["http://localhost:8000"],
 };
 const swaggerDocs = swaggerJsDoc(swaggerOption);
+const cookieSession = require('cookie-session');
+const passport = require("passport");
+app.use(
+  cookieSession({
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    keys: [process.env.COOKIE_KEY]
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
 //....................................................................................
 // app.use("/peerjs", peerServer);
-app.use(cors((origin = "http://localhost:3000"), (optionsSuccessStatus = 200)));
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 
 //....................................................................................
@@ -159,147 +170,147 @@ app.get("/api/v1/movie/details/:movieId", getMovieDetail);
 
 app.post("/api/v1/home/signup", signup);
 app.post("/api/v1/home/login", login);
-app.get("/api/v1/home/user/:id", mashDBAuth, getUserDetails);
-app.put("/api/v1/home/user/follow", mashDBAuth, followUser);
-app.put("/api/v1/home/user/unfollow", mashDBAuth, unfollowUser);
-app.get("/api/v1/home/get-followers", mashDBAuth, getFollowersDetails);
-app.get("/api/v1/home/get-followings", mashDBAuth, getFollowingsDetails);
-app.put("/api/v1/home/update-user-details", mashDBAuth, updateUserDetails);
-app.get("/api/v1/home/get-user", mashDBAuth, getUser);
+app.get("/api/v1/home/user/:id", getUserDetails);
+app.put("/api/v1/home/user/follow", followUser);
+app.put("/api/v1/home/user/unfollow", unfollowUser);
+app.get("/api/v1/home/get-followers", getFollowersDetails);
+app.get("/api/v1/home/get-followings", getFollowingsDetails);
+app.put("/api/v1/home/update-user-details", updateUserDetails);
+app.get("/api/v1/home/get-user", getUser);
 app.get(
   "/api/v1/home/mash-user-details/:userName",
-  mashDBAuth,
+
   getMashUserDetails
 );
 //...........................................................................................
-app.get("/api/v1/home/get-notification", mashDBAuth, getAllNotifications);
+app.get("/api/v1/home/get-notification", getAllNotifications);
 app.put(
   "/api/v1/home/user/read-notification",
-  mashDBAuth,
+
   markNotificationRead
 );
 //.......................................................................
-app.get("/api/v1/home/getSubPost", mashDBAuth, getSubscribedPost);
-app.post("/api/v1/home/post", mashDBAuth, postOnePosts);
-app.put("/api/v1/home/like-post", mashDBAuth, likePost);
-app.put("/api/v1/home/unlike-post", mashDBAuth, unlikePost);
-app.delete("/api/v1/home/delete-post/:postId", mashDBAuth, deletePost);
-// app.get("/api/v1/home/getSubPost", mashDBAuth, getSubscribedPost);
-app.get("/api/v1/home/myPost", mashDBAuth, getMyPost);
-app.post("/api/v1/home/comment-post", mashDBAuth, postComment);
-app.delete("/api/v1/home/delete-comment/:commentId", mashDBAuth, deleteComment);
-app.put("/api/v1/home/like-comment", mashDBAuth, likeComment);
-app.put("/api/v1/home/unlike-comment", mashDBAuth, unlikeComment);
-app.get("/api/v1/home/get-post-comment", mashDBAuth, getPostComments);
-app.get("/api/v1/home/mash-user-post/:userName", mashDBAuth, getMashUserPost);
+app.get("/api/v1/home/getSubPost", getSubscribedPost);
+app.post("/api/v1/home/post",  postOnePosts);
+app.put("/api/v1/home/like-post", likePost);
+app.put("/api/v1/home/unlike-post", unlikePost);
+app.delete("/api/v1/home/delete-post/:postId", deletePost);
+// app.get("/api/v1/home/getSubPost", getSubscribedPost);
+app.get("/api/v1/home/myPost", getMyPost);
+app.post("/api/v1/home/comment-post", postComment);
+app.delete("/api/v1/home/delete-comment/:commentId", deleteComment);
+app.put("/api/v1/home/like-comment", likeComment);
+app.put("/api/v1/home/unlike-comment", unlikeComment);
+app.get("/api/v1/home/get-post-comment", getPostComments);
+app.get("/api/v1/home/mash-user-post/:userName", getMashUserPost);
 //...........................................................................................
 app.get(
   "/api/v1/movie/get-user-like-dislike-movielist",
-  mashDBAuth,
+
   getUserLikeDislikeMovielist
 );
 app.get(
   "/api/v1/movie/get-mash-user-like-dislike-movielist/:userName",
-  mashDBAuth,
+
   getMashUserLikeDislikeMovielist
 );
-app.post("/api/v1/movie/like-movie", mashDBAuth, likeMovie);
-app.post("/api/v1/movie/dislike-movie", mashDBAuth, dislikeMovie);
-app.post("/api/v1/movie/undo-like-movie", mashDBAuth, undoLikeMovie);
-app.post("/api/v1/movie/undo-dislike-movie", mashDBAuth, undoDislikeMovie);
-app.get("/api/v1/movie/movie-status/:id", mashDBAuth, checkMovieStatus);
+app.post("/api/v1/movie/like-movie", likeMovie);
+app.post("/api/v1/movie/dislike-movie", dislikeMovie);
+app.post("/api/v1/movie/undo-like-movie", undoLikeMovie);
+app.post("/api/v1/movie/undo-dislike-movie", undoDislikeMovie);
+app.get("/api/v1/movie/movie-status/:id", checkMovieStatus);
 //..
-app.get("/api/v1/movie/get-user-list", mashDBAuth, getUserList);
+app.get("/api/v1/movie/get-user-list", getUserList);
 app.get(
   "/api/v1/movie/get-mash-user-list/:userName",
-  mashDBAuth,
+
   getMashUserList
 );
 //..
-app.get("/api/v1/movie/get-user-watchList", mashDBAuth, getUserWatchList);
+app.get("/api/v1/movie/get-user-watchList", getUserWatchList);
 app.get(
   "/api/v1/movie/get-mash-user-watchlist/:userName",
-  mashDBAuth,
+
   getMashUserWatchList
 );
 //...
-app.put("/api/v1/movie/update-list", mashDBAuth, updateList);
-app.delete("/api/v1/movie/delete-list/:listId", mashDBAuth, deleteList);
-app.post("/api/v1/movie/create-new-list", mashDBAuth, createNewList);
-app.post("/api/v1/movie/add-to-watchlist", mashDBAuth, addToWatchlist);
+app.put("/api/v1/movie/update-list", updateList);
+app.delete("/api/v1/movie/delete-list/:listId", deleteList);
+app.post("/api/v1/movie/create-new-list", createNewList);
+app.post("/api/v1/movie/add-to-watchlist", addToWatchlist);
 app.post(
   "/api/v1/movie/remove-from-watchlist",
-  mashDBAuth,
+
   removeFromWatchlist
 );
 app.get(
   "/api/v1/movie/movie-rated-status/:movieId",
-  mashDBAuth,
+
   movieRatedStatus
 );
-app.post("/api/v1/movie/post-user-review", mashDBAuth, postUserReview);
+app.post("/api/v1/movie/post-user-review", postUserReview);
 //....
-app.post("/api/v1/home/create-chat-room", mashDBAuth, createChatRoom);
-app.get("/api/v1/home/get-user-rooms", mashDBAuth, getAllUserRooms);
-app.get("/api/v1/home/get-unread-rooms", mashDBAuth, getUnreadRooms);
+app.post("/api/v1/home/create-chat-room", createChatRoom);
+app.get("/api/v1/home/get-user-rooms", getAllUserRooms);
+app.get("/api/v1/home/get-unread-rooms", getUnreadRooms);
 app.get(
   "/api/v1/home/get-rooms-messages/:roomId",
-  mashDBAuth,
+
   getRoomsMessages
 );
-app.put("/api/v1/home/mark-chatRoom-read", mashDBAuth, markChatRoomRead);
+app.put("/api/v1/home/mark-chatRoom-read", markChatRoomRead);
 //..................
 
-app.post("/api/v1/live/create-live-show", mashDBAuth, createLiveShow);
+app.post("/api/v1/live/create-live-show", createLiveShow);
 
 app.get(
   "/api/v1/live/get-live-show-details/:roomCode",
-  mashDBAuth,
+
   getLiveShowDetails
 );
 app.get(
   "/api/v1/live/get-genre-live-show/:genre",
-  mashDBAuth,
+
   getGenreLiveShow
 );
-app.get("/api/v1/live/get-all-live-show", mashDBAuth, getAllLiveShow);
+app.get("/api/v1/live/get-all-live-show", getAllLiveShow);
 app.get(
   "/api/v1/live/get-followings-live-show",
-  mashDBAuth,
+
   getFollowingsLiveShow
 );
 //...
 
 app.get(
   "/api/v1/explore/get-user-recommendation",
-  mashDBAuth,
+
   getUserRecommendation
 );
-app.get("/api/v1/explore/get-explore-post", mashDBAuth, getExplorePosts);
+app.get("/api/v1/explore/get-explore-post", getExplorePosts);
 
 //......
-app.get("/api/v1/search-list", mashDBAuth, searchList);
-app.get("/api/v1/search-user", mashDBAuth, searchUser);
-app.get("/api/v1/search-ticket", mashDBAuth, searchTicket);
+app.get("/api/v1/search-list", searchList);
+app.get("/api/v1/search-user", searchUser);
+app.get("/api/v1/search-ticket", searchTicket);
 //............................................ ticket booking management .................
 app.post(
   "/api/v1/bookingTicket/send-booking-request",
-  mashDBAuth,
+
   sendBookingRequest
 );
 app.get(
   "/api/v1/bookingTicket/get-requested-ticket",
-  mashDBAuth,
+
   getRequestedTicket
 );
 app.delete(
   "/api/v1/bookingTicket/cancel-requested-ticket/:postId",
-  mashDBAuth,
+
   cancelRequestedTicket
 );
 app.put(
   "/api/v1/bookingTicket/mark-ticket-confirm",
-  mashDBAuth,
+
   markRequestedTicketConfirmed
 );
 //.................................... [web sockets] .........................................
@@ -732,4 +743,8 @@ mongoose
     });
   })
   .catch((e) => console.log(e));
-
+//...........................................................
+require("./routes/authRoutes")(app);
+// app.use(authRoutes);
+// app.get("/auth/google",googleAuth);
+// app.get("/auth/google/callback", googleAuthCallback);
