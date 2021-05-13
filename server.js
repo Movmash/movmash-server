@@ -26,6 +26,7 @@ const io = socketio(server);
 // });
 require("dotenv").config();
 require("./OAuth/googleOAuth");
+require("./OAuth/facebookOAuth");
 const LiveShow = require("./models/liveShowModel");
 const Conversation = require("./models/conversationModel");
 const Notification = require("./models/notificationModel");

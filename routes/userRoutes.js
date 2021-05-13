@@ -200,7 +200,7 @@ exports.getMashUserDetails = (req, res) => {
 };
 
 exports.getUser = (req, res) => {
-  User.findOne({ email: req.user.email })
+  User.findOne({ authId: req.user.authId })
     .select("-password")
     .then((user) => {
       if (!user) return res.status(404).json({ message: "user Not Found" });

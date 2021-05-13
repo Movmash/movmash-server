@@ -1,8 +1,7 @@
-
+const shortid = require("shortid");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const User = require("../models/userModel");
-
 passport.serializeUser((user,done) => {
   done(null,user.id);
 })
@@ -18,17 +17,18 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
     },(accessToken, refreshToken, profile, done) => {
-      const userName = profile._json.email.split("@")[0];
-    User.findOne({ email: profile._json.email }).then((existingUser) => {
+      const userName = profile._json.name.split(" ").join("_")+shortid.generate();
+    User.findOne({ authId: profile.id }).then((existingUser) => {
       if (existingUser) {
         done(null, existingUser);
       } else {
         new User({
-          googleId: profile.id,
+          authId: profile.id,
           email: profile._json.email,
           userName: userName,
           fullName: profile._json.name,
-          profileImageUrl: profile._json.picture,
+          profileImageUrl: profile._json.picture + "?sz=100",
+          provider: profile.provider,
         })
           .save()
           .then((user) => {
