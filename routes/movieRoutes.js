@@ -119,6 +119,8 @@ exports.getUserLikeDislikeMovielist = (req, res) => {
     });
 };
 exports.getMashUserLikeDislikeMovielist = (req, res) => {
+  console.log("...................................")
+  console.log(req.params.userName);
   User.findOne({ userName: req.params.userName })
     .sort("-createdAt")
     .then((user) => {
