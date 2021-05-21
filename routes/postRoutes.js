@@ -520,9 +520,9 @@ exports.sendBookingRequest = (req, res) => {
 };
 
 exports.getRequestedTicket = (req, res) => {
-  TicketRequest.find({ requestedBy: req.user._id })
-    .populate("postedBy", "profileImageUrl userName email")
-    .populate("requestedBy", "profileImageUrl userName email")
+  TicketRequest.find({$or:[{requestedBy: req.user._id}, {postedBy: req.user._id}]  })
+    .populate("postedBy", "profileImageUrl userName email fullName")
+    .populate("requestedBy", "profileImageUrl userName email fullName")
     .populate("postId")
     .sort("-createdAt")
     .then((data) => {
@@ -539,7 +539,7 @@ exports.cancelRequestedTicket = (req, res) => {
   console.log(req.body);
   TicketRequest.findOneAndDelete({
     postId: req.params.postId,
-    requestedBy: req.user._id,
+    $or: [{requestedBy: req.user._id},{ postedBy: req.body.postedBy}]
   })
     .then((doc) => {
       Post.findByIdAndUpdate(
