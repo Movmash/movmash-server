@@ -539,22 +539,39 @@ exports.cancelRequestedTicket = (req, res) => {
   console.log(req.body);
   TicketRequest.findOneAndDelete({
     postId: req.params.postId,
-    $or: [{requestedBy: req.user._id},{ postedBy: req.body.postedBy}]
+    $or: [{requestedBy: req.body.requestedBy},{ postedBy: req.body.postedBy}]
   })
     .then((doc) => {
-      Post.findByIdAndUpdate(
-        req.params.postId,
-        {
-          $pull: { bookingRequest: req.user._id },
-        },
-        { new: true }
-      )
-        .then((post) => {
-          return res.status(201).json({ deleted: "successfully" });
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      if (req.body.requestedBy === req.body.postedBy){
+        Post.findByIdAndUpdate(
+          req.params.postId,
+          {
+            $pull: { bookingRequest: req.body.postedBy },
+          },
+          { new: true }
+        )
+          .then((post) => {
+            return res.status(201).json({ deleted: "successfully" });
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }else {
+        Post.findByIdAndUpdate(
+          req.params.postId,
+          {
+            $pull: { bookingRequest: req.body.requestedBy },
+          },
+          { new: true }
+        )
+          .then((post) => {
+            return res.status(201).json({ deleted: "successfully" });
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+        
     })
     .catch((e) => {
       console.log(e);
