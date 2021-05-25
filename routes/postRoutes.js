@@ -104,7 +104,6 @@ exports.postOnePosts = (req, res) => {
         .then((doc) => {
           User.findOneAndUpdate(
             { userName: req.user.userName },
-            { $inc: { postNumber: 1 } }
           )
             .then(() => {
               return res.status(201).json(doc);
@@ -200,6 +199,29 @@ exports.deletePost = (req, res) => {
       if (err || !post) return res.status(422).json({ error: err });
 
       if (post.postedBy._id.toString() === req.user._id.toString()) {
+        if(post.type === "ticket"){
+
+        post
+          .remove()
+          .then((result) => {
+            User.findByIdAndUpdate(
+              post.postedBy._id,
+              { new: true }
+            )
+              .select("-password")
+              .then((doc) => {
+                console.log(doc);
+              })
+              .catch((e) => {
+                console.log(e);
+              });
+            return res.status(201).json(result);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+        }else {
+
         post
           .remove()
           .then((result) => {
@@ -220,6 +242,7 @@ exports.deletePost = (req, res) => {
           .catch((e) => {
             console.log(e);
           });
+        }
       }
     });
   // Post.findOne({_id:req.params.pos})
@@ -227,23 +250,33 @@ exports.deletePost = (req, res) => {
 
 exports.getSubscribedPost = (req, res) => {
   // pagination require ............................
-  Post.find({
-    postedBy: { $in: [...req.user.followings, req.user._id] },
-    postType: { $ne: "explore" },
+  const timeFilter = new Date().setHours(new Date().getHours() - 6);
+  Post.deleteMany({
+    showTimeTo: { $lt: timeFilter },
+    postedBy: req.user._id,
   })
-    .populate("postedBy", "_id email userName profileImageUrl")
-    .populate({
-      path: "comments",
-      model: "Comment",
-      populate: {
-        path: "commentedBy",
-        select: "_id email userName profileImageUrl",
-        model: "User",
-      },
-    })
-    .sort("-createdAt")
-    .then((posts) => {
-      return res.status(200).json(posts);
+    .then(() => {
+        Post.find({
+          postedBy: { $in: [...req.user.followings, req.user._id] },
+          postType: { $ne: "explore" },
+        })
+          .populate("postedBy", "_id email userName profileImageUrl")
+          .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+              path: "commentedBy",
+              select: "_id email userName profileImageUrl",
+              model: "User",
+            },
+          })
+          .sort("-createdAt")
+          .then((posts) => {
+            return res.status(200).json(posts);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
     })
     .catch((e) => {
       console.log(e);
@@ -382,29 +415,32 @@ exports.deleteComment = (req, res) => {
     });
 };
 exports.likeComment = (req, res) => {
-  Comment.find({$and :[{ _id: req.body.commentId },{ likes: { $in: req.user._id } }]}, (err, docs) => {
-    if (err) return res.status(422).json({ error: err });
-    else {
-      if (docs.length === 0) {
-        Comment.findByIdAndUpdate(
-          req.body.commentId,
-          {
-            $push: { likes: req.user._id },
-            $inc: { likeCount: 1 },
-          },
-          { new: true }
-        ).exec((err, result) => {
-          if (err) return res.status(422).json({ error: err });
-          return res.status(201).json(result);
-        });
-      } else {
-        Comment.findById(req.body.commentId).exec((err, result) => {
-          if (err) return res.status(422).json({ error: err });
-          return res.status(201).json(result);
-        });
+  Comment.find(
+    { $and: [{ _id: req.body.commentId }, { likes: { $in: req.user._id } }] },
+    (err, docs) => {
+      if (err) return res.status(422).json({ error: err });
+      else {
+        if (docs.length === 0) {
+          Comment.findByIdAndUpdate(
+            req.body.commentId,
+            {
+              $push: { likes: req.user._id },
+              $inc: { likeCount: 1 },
+            },
+            { new: true }
+          ).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            return res.status(201).json(result);
+          });
+        } else {
+          Comment.findById(req.body.commentId).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            return res.status(201).json(result);
+          });
+        }
       }
     }
-  });
+  );
 };
 
 exports.unlikeComment = (req, res) => {
@@ -453,13 +489,13 @@ exports.getMashUserPost = (req, res) => {
     .then((user) => {
       Post.find({ postedBy: user._id })
         .sort("-createdAt")
-        .populate("postedBy", "_id email userName profileImageUrl")
+        .populate("postedBy", "_id profileImageUrl userName email fullName")
         .populate({
           path: "comments",
           model: "Comment",
           populate: {
             path: "commentedBy",
-            select: "_id email userName profileImageUrl",
+            select: "_id profileImageUrl userName email fullName",
             model: "User",
           },
         })
@@ -491,8 +527,8 @@ exports.sendBookingRequest = (req, res) => {
   TicketRequest.create(bookingRequest)
     .then((doc) => {
       TicketRequest.findById(doc._id)
-        .populate("postedBy", "profileImageUrl userName email")
-        .populate("requestedBy", "profileImageUrl userName email")
+        .populate("postedBy", "profileImageUrl userName email fullName")
+        .populate("requestedBy", "profileImageUrl userName email fullName")
         .populate("postId")
 
         .then((ticket) => {
@@ -520,18 +556,28 @@ exports.sendBookingRequest = (req, res) => {
 };
 
 exports.getRequestedTicket = (req, res) => {
-  TicketRequest.find({$or:[{requestedBy: req.user._id}, {postedBy: req.user._id}]  })
-    .populate("postedBy", "profileImageUrl userName email fullName")
-    .populate("requestedBy", "profileImageUrl userName email fullName")
-    .populate("postId")
-    .sort("-createdAt")
-    .then((data) => {
-      //................
-      return res.status(200).json(data);
+  const timeFilter = new Date().setHours(new Date().getHours() - 6);
+  TicketRequest.deleteMany({ showTimeTo: { $lt: timeFilter } })
+    .then(() => {
+      TicketRequest.find({
+        $or: [{ requestedBy: req.user._id }, { postedBy: req.user._id }],
+      })
+        .populate("postedBy", "profileImageUrl userName email fullName")
+        .populate("requestedBy", "profileImageUrl userName email fullName")
+        .populate("postId")
+        .sort("-createdAt")
+        .then((data) => {
+          //................
+          return res.status(200).json(data);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json({ error: e });
+        });
     })
     .catch((e) => {
       console.log(e);
-      return res.status(500).json({ error: e });
+      // return res.status(500).json({ error: e });
     });
 };
 
@@ -539,10 +585,13 @@ exports.cancelRequestedTicket = (req, res) => {
   console.log(req.body);
   TicketRequest.findOneAndDelete({
     postId: req.params.postId,
-    $or: [{requestedBy: req.body.requestedBy},{ postedBy: req.body.postedBy}]
+    $or: [
+      { requestedBy: req.body.requestedBy },
+      { postedBy: req.body.postedBy },
+    ],
   })
     .then((doc) => {
-      if (req.body.requestedBy === req.body.postedBy){
+      if (req.body.requestedBy === req.body.postedBy) {
         Post.findByIdAndUpdate(
           req.params.postId,
           {
@@ -556,7 +605,7 @@ exports.cancelRequestedTicket = (req, res) => {
           .catch((e) => {
             console.log(e);
           });
-      }else {
+      } else {
         Post.findByIdAndUpdate(
           req.params.postId,
           {
@@ -571,7 +620,6 @@ exports.cancelRequestedTicket = (req, res) => {
             console.log(e);
           });
       }
-        
     })
     .catch((e) => {
       console.log(e);

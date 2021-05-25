@@ -8,6 +8,7 @@ const {
   getUserDetail,
   getUsersInRoom,
   getHostDetail,
+  updateWatchSecond,
 } = require("./util/userManagement");
 const app = express();
 const cors = require("cors");
@@ -28,6 +29,7 @@ require("dotenv").config();
 require("./OAuth/googleOAuth");
 require("./OAuth/facebookOAuth");
 const LiveShow = require("./models/liveShowModel");
+const User = require("./models/userModel");
 const Conversation = require("./models/conversationModel");
 const Notification = require("./models/notificationModel");
 const Room = require("./models/roomModel");
@@ -390,75 +392,102 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("join-party", ({ roomCode, userName, userId }) => {
-    console.log(roomCode, userName);
-    LiveShow.findOneAndUpdate(
-      { roomCode },
-      { $inc: { memberNumber: 1 } },
-      { new: true }
-    )
-      .then((data) => {
-        console.log(data, 1);
-        if (data === null) {
-          socket.emit("room-not-found");
-          return;
-        }
-        const { user } = addUser({
-          id: socket.id,
-          room: roomCode,
-          name: userName,
-          host: userId === data.host.toString(),
-        });
-        socket.join(user.room);
-        socket.emit("party-message", {
-          user: "admin",
-          text: `welcome, ${user.name} !!!`,
-          type: "greet",
-        });
-        socket.broadcast.to(user.room).emit("party-message", {
-          user: "admin",
-          text: `${user.name} has joined!`,
-          type: "greet",
-        });
-        let host = null;
-        if (userId === data.host.toString()) {
-          host = socket.id;
-          socket.emit("set-host");
-          socket.broadcast.to(roomCode).emit("host-enter-in-room");
-        } else {
-          // can check if host is not available the emit something .....................................................................................................................
-          console.log(getHostDetail(roomCode));
-          if (getHostDetail(roomCode) === undefined) {
-            socket.emit("no-host-available");
-          } else {
-            host = getHostDetail(roomCode).id;
-            console.log(host);
-          }
-        }
-        const userList = getUsersInRoom(roomCode);
-        io.to(roomCode).emit("user-list-inside-the-room", userList);
-        if (socket.id !== host) {
-          console.log("call the host " + host);
-          setTimeout(() => {
-            socket.broadcast.to(host).emit("get-data", { caller: socket.id });
-          }, 2000);
-        } else {
-          console.log("I am the host");
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+  socket.on("get-user-in-the-room-for-room-info", (data) => {
+    const userList = getUsersInRoom(data.roomId);
+    console.log(userList);
+    io.emit("user-list-inside-the-room-for-room-info", userList);
   });
-  socket.on("send-party-message", ({ roomCode, userName, message }) => {
-    console.log(socket.id);
-    const user = getUserDetail(socket.id);
+  socket.on(
+    "join-party",
+    ({ roomCode, userName, userId, fullName, profileImageUrl }) => {
+      console.log(roomCode, userName);
+      LiveShow.findOneAndUpdate(
+        { roomCode },
+        { $inc: { memberNumber: 1 } },
+        { new: true }
+      )
+        .then((data) => {
+          console.log(data, 1);
+          if (data === null) {
+            socket.emit("room-not-found");
+            return;
+          }
+          const { user } = addUser({
+            id: socket.id,
+            room: roomCode,
+            userName: userName,
+            fullName: fullName,
+            profileImageUrl:profileImageUrl,
+            host: userId === data.host.toString(),
+            watchSecond: 0,
+            userId: userId
+          });
+          socket.join(user.room);
+          socket.emit("party-message", {
+            user: "admin",
+            text: `welcome, ${user.fullName} !!!`,
+            type: "greet",
+          });
+          socket.broadcast.to(user.room).emit("party-message", {
+            user: "admin",
+            text: `${user.fullName} has joined!`,
+            type: "greet",
+          });
+          let host = null;
+          if (userId === data.host.toString()) {
+            host = socket.id;
+            socket.emit("set-host");
+            socket.broadcast.to(roomCode).emit("host-enter-in-room");
+          } else {
+            // can check if host is not available the emit something .....................................................................................................................
+            console.log(getHostDetail(roomCode));
+            if (getHostDetail(roomCode) === undefined) {
+              socket.emit("no-host-available");
+            } else {
+              host = getHostDetail(roomCode).id;
+              // console.log(host);
+            }
+          }
+          const userList = getUsersInRoom(roomCode);
+          io.to(roomCode).emit("user-list-inside-the-room", userList);
+          if (socket.id !== host) {
+            console.log("call the host " + host);
+            setTimeout(() => {
+              socket.broadcast.to(host).emit("get-data", { caller: socket.id });
+            }, 2000);
+          } else {
+            console.log("I am the host");
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  );
+  socket.on(
+    "send-party-message",
+    ({
+      roomCode,
+      userName,
+      message,
+      fullName,
+      profileImageUrl,
+    }) => {
+      console.log(socket.id);
+      const user = getUserDetail(socket.id);
 
-    io.to(user.room).emit("party-message", {
-      user: user.name,
-      text: message,
-      type: "user",
-    });
+      io.to(user.room).emit("party-message", {
+        user: user.userName,
+        text: message,
+        type: "user",
+        fullName,
+        profileImageUrl
+      });
+    }
+  );
+
+  socket.on("update-watch-second",({ watchSecond })=> {
+    updateWatchSecond(socket.id, watchSecond);
   });
 
   //...........................................
@@ -633,6 +662,37 @@ io.on("connection", (socket) => {
       id: socket.id,
     });
   });
+
+  socket.on(
+    "change-room-video-source",
+    ({ liveShowId, roomCode, videoUrl }) => {
+      // console.log(payload);
+      LiveShow.findByIdAndUpdate(liveShowId, { videoUrl }, { new: true })
+        .then((newLiveShowData) => {
+          io.to(roomCode).emit("new-room-video-source", newLiveShowData);
+          // socket.broadcast
+          //   .to(roomCode)
+          //   .emit("new-room-video-source", newLiveShowData);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  );
+
+  socket.on("change-room-info", ({genre,privacy,roomTitle,description,liveShowId,roomCode})=> {
+    LiveShow.findByIdAndUpdate(
+      liveShowId,
+      { genre, privacy, roomTitle, description },
+      { new: true }
+    )
+      .then((newLiveShowData) => {
+        io.to(roomCode).emit("new-room-info", newLiveShowData);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  });
   //.............//...........//..............
   //......................................................
   socket.on("leaving-party", () => {
@@ -643,44 +703,54 @@ io.on("connection", (socket) => {
       if (userDetail.host) {
         socket.broadcast.to(userDetail.room).emit("no-host-available");
       }
-      LiveShow.findOneAndUpdate(
-        { roomCode: userDetail.room },
-        { $inc: { memberNumber: -1 } },
-        { new: true }
-      )
+      console.log(userDetail);
+      User.findByIdAndUpdate(userDetail.userId, {
+        $inc: { watchHour: userDetail.watchSecond},
+      }, {new:true})
         .then((data) => {
-          const user = removeUser(socket.id);
-          console.log(data);
-          if (users[userDetail.room]) {
-            const indexVideo = users[userDetail.room].filter(
-              (u) => u === socket.id
-            );
-            if (indexVideo !== -1)
-              users[userDetail.room].splice(indexVideo, 1)[0];
-          }
+          LiveShow.findOneAndUpdate(
+            { roomCode: userDetail.room },
+            { $inc: { memberNumber: -1 } },
+            { new: true }
+          )
+            .then((data) => {
+              const user = removeUser(socket.id);
+              console.log(data);
+              if (users[userDetail.room]) {
+                const indexVideo = users[userDetail.room].filter(
+                  (u) => u === socket.id
+                );
+                if (indexVideo !== -1)
+                  users[userDetail.room].splice(indexVideo, 1)[0];
+              }
 
-          if (user) {
-            socket.broadcast.to(user.room).emit("party-message", {
-              user: "admin",
-              text: `${user.name} has left`,
-              type: "greet",
+              if (user) {
+                socket.broadcast.to(user.room).emit("party-message", {
+                  user: "admin",
+                  text: `${user.fullName} has left`,
+                  type: "greet",
+                });
+                const userList = getUsersInRoom(user.room);
+                console.log(userList, "leaving");
+                io.to(user.room).emit("user-list-inside-the-room", userList);
+                io.to(user.room).emit("close-peer");
+                console.log("closePeer");
+                socket.leave(user.room);
+                // io.to(user.room).emit("party-message", {
+                //   user: "admin",
+                //   text: `${user.name} has left`,
+                //   type: "greet",
+                // });
+              }
+            })
+            .catch((e) => {
+              console.log(e);
             });
-            const userList = getUsersInRoom(user.room);
-            console.log(userList, "leaving");
-            io.to(user.room).emit("user-list-inside-the-room", userList);
-            io.to(user.room).emit("close-peer");
-            console.log("closePeer");
-            socket.leave(user.room);
-            // io.to(user.room).emit("party-message", {
-            //   user: "admin",
-            //   text: `${user.name} has left`,
-            //   type: "greet",
-            // });
-          }
         })
         .catch((e) => {
           console.log(e);
         });
+      
     }
   });
   //......................................
@@ -693,33 +763,42 @@ io.on("connection", (socket) => {
       if (userDetail.host) {
         socket.broadcast.to(userDetail.room).emit("no-host-available");
       }
-      LiveShow.findOneAndUpdate(
-        { roomCode: userDetail.room },
-        { $inc: { memberNumber: -1 } },
-        { new: true }
-      )
-        .then((data) => {
-          const user = removeUser(socket.id);
-          console.log(data);
-          if (users[userDetail.room]) {
-            const indexVideo = users[userDetail.room].filter(
-              (u) => u === socket.id
-            );
-            if (indexVideo !== -1)
-              users[userDetail.room].splice(indexVideo, 1)[0];
-          }
-          if (user) {
-            io.to(user.room).emit("party-message", {
-              user: "admin",
-              text: `${user.name} has left`,
-              type: "greet",
+      console.log(userDetail);
+      User.findByIdAndUpdate(userDetail.userId, {
+       $inc: { watchHour: userDetail.watchSecond},
+      }, {new:true})
+        .then(() => {
+          LiveShow.findOneAndUpdate(
+            { roomCode: userDetail.room },
+            { $inc: { memberNumber: -1 } },
+            { new: true }
+          )
+            .then((data) => {
+              const user = removeUser(socket.id);
+              console.log(data);
+              if (users[userDetail.room]) {
+                const indexVideo = users[userDetail.room].filter(
+                  (u) => u === socket.id
+                );
+                if (indexVideo !== -1)
+                  users[userDetail.room].splice(indexVideo, 1)[0];
+              }
+              if (user) {
+                io.to(user.room).emit("party-message", {
+                  user: "admin",
+                  text: `${user.fullName} has left`,
+                  type: "greet",
+                });
+                const userList = getUsersInRoom(user.room);
+                io.to(user.room).emit("user-list-inside-the-room", userList);
+                io.to(user.room).emit("close-peer");
+                console.log("closePeer");
+                socket.leave(user.room);
+              }
+            })
+            .catch((e) => {
+              console.log(e);
             });
-            const userList = getUsersInRoom(user.room);
-            io.to(user.room).emit("user-list-inside-the-room", userList);
-            io.to(user.room).emit("close-peer");
-            console.log("closePeer");
-            socket.leave(user.room);
-          }
         })
         .catch((e) => {
           console.log(e);
