@@ -63,6 +63,7 @@ const {
   getRequestedTicket,
   cancelRequestedTicket,
   markRequestedTicketConfirmed,
+  getPostDetails,
 } = require("./routes/postRoutes.js");
 const {
   markNotificationRead,
@@ -116,6 +117,9 @@ const {
   searchUser,
   searchTicket,
   searchList,
+  getMovieList,
+  getPeopleList,
+  getTicket,
 } = require("./routes/searchRoutes");
 const chalk = require("chalk");
 //.....................................[swagger option]...............................
@@ -206,6 +210,7 @@ app.put("/api/v1/home/like-comment", likeComment);
 app.put("/api/v1/home/unlike-comment", unlikeComment);
 app.get("/api/v1/home/get-post-comment", getPostComments);
 app.get("/api/v1/home/mash-user-post/:userName", getMashUserPost);
+app.get("/api/v1/home/get-post-details/:postId", getPostDetails);
 //...........................................................................................
 app.get(
   "/api/v1/movie/get-user-like-dislike-movielist",
@@ -295,6 +300,10 @@ app.get("/api/v1/explore/get-explore-post", getExplorePosts);
 app.get("/api/v1/search-list", searchList);
 app.get("/api/v1/search-user", searchUser);
 app.get("/api/v1/search-ticket", searchTicket);
+//.................................... [Explore] .............................................
+app.get("/api/v1/search-get-list", getMovieList);
+app.get("/api/v1/search-get-people", getPeopleList);
+app.get("/api/v1/search-get-ticket",getTicket);
 //............................................ ticket booking management .................
 app.post(
   "/api/v1/bookingTicket/send-booking-request",
@@ -316,6 +325,7 @@ app.put(
 
   markRequestedTicketConfirmed
 );
+
 //.................................... [web sockets] .........................................
 
 db.once("open", () => {

@@ -512,6 +512,31 @@ exports.getMashUserPost = (req, res) => {
       console.log(e);
     });
 };
+
+exports.getPostDetails = (req,res) => {
+  console.log(req.params.postId)
+  Post.findById(req.params.postId)
+    .populate("postedBy", "_id profileImageUrl userName email fullName")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "commentedBy",
+        select: "_id profileImageUrl userName email fullName",
+        model: "User",
+      },
+    })
+    .then((postDetail) => {
+      if (postDetail === null) {
+        return res.status(404).json({ message: "postNotFound" });
+      } else {
+        return res.status(200).json(postDetail);
+      }
+    })
+    .catch((e) => {
+      return res.status(422).json({ message: "postNotFound" });
+    });
+}
 //........... booking ticket management
 
 exports.sendBookingRequest = (req, res) => {

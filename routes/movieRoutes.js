@@ -556,6 +556,7 @@ exports.upcomingCovers = (req, res) => {
 exports.movieLists = (req, res) => {
   const genre = req.params.genreName;
   const page = req.params.pageNumber;
+  console.log(genre)
   switch (genre) {
     case "Trending":
       axios
@@ -580,6 +581,7 @@ exports.movieLists = (req, res) => {
         });
       break;
     case "Action":
+      console.log(genre);
       axios
         .get(requests.fetchActionMovies + `&page=${page}`)
         .then((response) => {
@@ -778,7 +780,7 @@ exports.movieLists = (req, res) => {
         });
       break;
     default:
-      console.log(type);
+     return res.status(200).json({validGenre: false})
   }
 };
 
