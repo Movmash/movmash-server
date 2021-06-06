@@ -38,6 +38,7 @@
     "ws": "^7.4.6"
   },
   "devDependencies": {
-    "hosted-git-info": "^4.0.2"
+    "hosted-git-info": "^4.0.2",
+    "ws": "^7.4.6"
   }
 }
