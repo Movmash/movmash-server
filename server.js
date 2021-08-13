@@ -44,6 +44,11 @@ const {
   updateUserDetails,
   getUser,
   getMashUserDetails,
+  checkUsernameAvailability,
+  getFollowingsDetailsProfile,
+  getFollowersDetailsProfile,
+  removeFollower,
+  undoRemoveFollower,
 } = require("./routes/userRoutes.js");
 const mashDBAuth = require("./util/mashDBAuth.js");
 const {
@@ -148,6 +153,7 @@ const swaggerOption = {
 const swaggerDocs = swaggerJsDoc(swaggerOption);
 const cookieSession = require('cookie-session');
 const passport = require("passport");
+const { profileImageUpload, coverImageUpload, deleteProfileImage } = require("./routes/fileRoutes");
 app.use(
   cookieSession({
     maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -182,8 +188,12 @@ app.put("/api/v1/home/user/follow", followUser);
 app.put("/api/v1/home/user/unfollow", unfollowUser);
 app.get("/api/v1/home/get-followers", getFollowersDetails);
 app.get("/api/v1/home/get-followings", getFollowingsDetails);
+app.get("/api/v1/home/get-followers/:userId", getFollowersDetailsProfile);
+app.get("/api/v1/home/get-followings/:userId", getFollowingsDetailsProfile);
 app.put("/api/v1/home/update-user-details", updateUserDetails);
 app.get("/api/v1/home/get-user", getUser);
+app.post("/api/v1/home/remove-follower", removeFollower);
+app.post("/api/v1/home/undo-remove-follower", undoRemoveFollower);
 app.get(
   "/api/v1/home/mash-user-details/:userName",
 
@@ -211,6 +221,7 @@ app.put("/api/v1/home/unlike-comment", unlikeComment);
 app.get("/api/v1/home/get-post-comment", getPostComments);
 app.get("/api/v1/home/mash-user-post/:userName", getMashUserPost);
 app.get("/api/v1/home/get-post-details/:postId", getPostDetails);
+app.get("/api/v1/home/check-username-availability/:userName", checkUsernameAvailability);
 //...........................................................................................
 app.get(
   "/api/v1/movie/get-user-like-dislike-movielist",
@@ -325,6 +336,10 @@ app.put(
 
   markRequestedTicketConfirmed
 );
+//.....................................[File Upload] ........................................
+app.post("/api/v1/upload-image/profile", profileImageUpload);
+app.post("/api/v1/upload-image/cover",coverImageUpload);
+app.post("/api/v1/delete-image/cover", deleteProfileImage);
 
 //.................................... [web sockets] .........................................
 

@@ -30,7 +30,7 @@ const userSchema = new Schema(
       default:
         "https://www.setaswall.com/wp-content/uploads/2017/06/Closed-FB-Cover-Photo-851-x-315.jpg",
     },
-    genre: String,
+    genre: [{type: String, default:""}],
     bio: String,
     followersCount: {
       type: Number,
