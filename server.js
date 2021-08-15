@@ -12,7 +12,10 @@ const {
 } = require("./util/userManagement");
 const app = express();
 const path = require("path");
-const cors = require("cors");
+// const cors = require("cors");
+const xss = require("xss-clean");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
 const socketio = require("socket.io");
 const server = http.createServer(app);
@@ -51,7 +54,7 @@ const {
   removeFollower,
   undoRemoveFollower,
 } = require("./routes/userRoutes.js");
-const mashDBAuth = require("./util/mashDBAuth.js");
+// const mashDBAuth = require("./util/mashDBAuth.js");
 const {
   postOnePosts,
   likePost,
@@ -155,7 +158,14 @@ const swaggerDocs = swaggerJsDoc(swaggerOption);
 const cookieSession = require('cookie-session');
 const passport = require("passport");
 const { profileImageUpload, coverImageUpload, deleteProfileImage } = require("./routes/fileRoutes");
-
+app.use(xss());
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      process.env.NODE_ENV === "production" ? undefined : false,
+  })
+);
+app.use(mongoSanitize());
 app.use(
   cookieSession({
     maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -167,58 +177,14 @@ app.use(passport.session());
 app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
 //....................................................................................
 // app.use("/peerjs", peerServer);
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+
 app.use(express.json());
 
 //....................................................................................
 
 const db = mongoose.connection;
 
-// app.get("login", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/live", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("search", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/movie/:id", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/signup", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/@:userName", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/message/inbox", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/messages/inbox/:roomId", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/browse/people", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/browse/lists", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/browse/tickets", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/browse/genre/:genreName", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/post/:postId", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/live/create", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
-// app.get("/live/room/:roomCode", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
-// });
 //....................................................................................
 app.get("/api/v1/movie/search-movie", searchMovie);
 
