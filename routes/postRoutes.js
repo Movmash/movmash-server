@@ -210,7 +210,7 @@ exports.deletePost = (req, res) => {
             )
               .select("-password")
               .then((doc) => {
-                console.log(doc);
+                // console.log(doc);
               })
               .catch((e) => {
                 console.log(e);
@@ -232,7 +232,7 @@ exports.deletePost = (req, res) => {
             )
               .select("-password")
               .then((doc) => {
-                console.log(doc);
+                // console.log(doc);
               })
               .catch((e) => {
                 console.log(e);
@@ -285,7 +285,7 @@ exports.getSubscribedPost = (req, res) => {
 
 exports.getMyPost = (req, res) => {
   // pageination require ......................................
-  console.log(req.user._id);
+  // console.log(req.user._id);
   Post.find({ postedBy: req.user._id })
     .populate("postedBy", "_id email userName profileImageUrl")
     .populate({
@@ -308,7 +308,7 @@ exports.getMyPost = (req, res) => {
 };
 
 exports.postComment = (req, res) => {
-  console.log(req.body.comment);
+  // console.log(req.body.comment);
   if (req.body.comment.trim() === "")
     return res.status(422).json({ message: "commet should not be empty" });
   if (req.body.postType === "review") {
@@ -321,7 +321,7 @@ exports.postComment = (req, res) => {
 
     Comment.create(newComment)
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         Post.findByIdAndUpdate(
           req.body.postId,
           { $push: { comments: result._id }, $inc: { commentCount: 1 } },
@@ -360,7 +360,7 @@ exports.postComment = (req, res) => {
 
     Comment.create(newComment)
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         Post.findByIdAndUpdate(
           req.body.postId,
           { $push: { comments: result._id }, $inc: { commentCount: 1 } },
@@ -390,7 +390,7 @@ exports.deleteComment = (req, res) => {
   Comment.findOne({ _id: req.params.commentId })
     .populate("commentedBy", "_id")
     .exec((err, comment) => {
-      console.log(comment);
+      // console.log(comment);
       if (err || !comment) return res.status(422).json(err);
       if (comment.commentedBy._id.toString() === req.user._id.toString()) {
         comment.remove().then((result) => {

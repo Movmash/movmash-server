@@ -30,7 +30,7 @@ exports.getUnreadRooms = (req, res) => {
     .populate("participants", "profileImageUrl userName fullName")
     .sort("-updatedAt")
     .then((data) => {
-      console.log(data);
+      // console.log(data);
       return res.status(200).json(data);
     })
     .catch((e) => {

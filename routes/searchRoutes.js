@@ -79,7 +79,7 @@ exports.getTicket = (req,res) => {
   Post.find({ type: "ticket", postedBy: { $ne: req.user._id } })
     .populate("postedBy", "_id fullName profileImageUrl email userName")
     .then((data) => {
-      console.log(data);
+      // console.log(data);
       return res.status(200).json(data);
     })
     .catch((e) => {
