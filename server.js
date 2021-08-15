@@ -172,6 +172,7 @@ app.use(
     keys: [process.env.COOKIE_KEY]
   })
 );
+// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
