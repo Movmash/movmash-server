@@ -54,7 +54,6 @@ const {
   removeFollower,
   undoRemoveFollower,
 } = require("./routes/userRoutes.js");
-// const mashDBAuth = require("./util/mashDBAuth.js");
 const {
   postOnePosts,
   likePost,
