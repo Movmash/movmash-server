@@ -58,7 +58,7 @@ exports.createChatRoom = (req, res) => {
   })
     .populate("participants", "profileImageUrl userName fullName")
     .then((doc) => {
-      console.log(doc);
+      // console.log(doc);
       if (!doc) {
         const newRoom = {
           participants: [req.body.userId, req.user._id],

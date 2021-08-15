@@ -403,8 +403,8 @@ exports.deleteComment = (req, res) => {
             { new: true }
           )
             .then((doc) => {
-              console.log(doc);
-              console.log(result);
+              // console.log(doc);
+              // console.log(result);
               return res.status(201).json({ doc, result });
             })
             .catch((e) => {
@@ -563,7 +563,7 @@ exports.sendBookingRequest = (req, res) => {
             { new: true }
           )
             .then((post) => {
-              console.log(ticket);
+              // console.log(ticket);
               return res.status(201).json(ticket);
             })
             .catch((e) => {
