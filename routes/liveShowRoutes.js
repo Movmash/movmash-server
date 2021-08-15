@@ -15,7 +15,7 @@ exports.getAllLiveShow = (req, res) => {
   LiveShow.find({ $and: [{ privacy: "Public" }, { memberNumber: { $gt: 0 }}] })
     .populate("host", "userName profileImageUrl fullName")
     .then((data) => {
-      console.log(data)
+      // console.log(data)
       return res.status(200).json(data);
     })
     .catch((e) => {
@@ -78,7 +78,7 @@ exports.createLiveShow = (req, res) => {
         ? "https://www.youtube.com/watch?v=vuQR6Mj64jQ"
         : req.body.videoUrl,
   };
-  console.log(liveShowDetail);
+  // console.log(liveShowDetail);
   LiveShow.findOneAndUpdate({ host: req.user._id }, liveShowDetail, {
     upsert: true,
     setDefaultsOnInsert: true,

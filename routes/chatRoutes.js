@@ -131,7 +131,7 @@ exports.createChatRoom = (req, res) => {
                     roomId: room._id,
                   };
                 }
-                console.log(req.body.type);
+                // console.log(req.body.type);
                 Conversation.create(firstConversation)
                   .then((chat) => {
                     Room.findByIdAndUpdate(
@@ -191,7 +191,7 @@ exports.createChatRoom = (req, res) => {
             read: false,
             roomId: doc._id,
           };
-          console.log(req.body.postData);
+          // console.log(req.body.postData);
         } else if (req.body.type === "suggestMe") {
           firstConversation = {
             sender: req.user._id,

@@ -351,7 +351,7 @@ db.once("open", () => {
   const notification = db.collection("notifications");
   const changeStreamForNotification = notification.watch();
   changeStreamForNotification.on("change", (change) => {
-    console.log("heyyy");
+    // console.log("heyyy");
     // console.log("change in server", change);
     if (change.operationType === "insert") {
       Notification.findById(change.fullDocument._id)
@@ -371,13 +371,13 @@ const users = {};
 
 const socketToRoom = {};
 io.on("connection", (socket) => {
-  console.log(socket.handshake.query.id);
+  // console.log(socket.handshake.query.id);
   socket.join(socket.handshake.query.id);
 
-  console.log("new connection have build");
+  // console.log("new connection have build");
 
   socket.on("sendMessage", (message) => {
-    console.log(message);
+    // console.log(message);
     try {
       let chat = new Conversation(message);
 
@@ -395,7 +395,7 @@ io.on("connection", (socket) => {
             )
               .populate("participants", "profileImageUrl userName fullName")
               .then((data) => {
-                console.log(message.roomId);
+                // console.log(message.roomId);
                 io.to(message.sender)
                   .to(message.recipient)
                   .emit("message-room", data);
@@ -419,20 +419,20 @@ io.on("connection", (socket) => {
 
   socket.on("get-user-in-the-room-for-room-info", (data) => {
     const userList = getUsersInRoom(data.roomId);
-    console.log(userList);
+    // console.log(userList);
     io.emit("user-list-inside-the-room-for-room-info", userList);
   });
   socket.on(
     "join-party",
     ({ roomCode, userName, userId, fullName, profileImageUrl }) => {
-      console.log(roomCode, userName);
+      // console.log(roomCode, userName);
       LiveShow.findOneAndUpdate(
         { roomCode },
         { $inc: { memberNumber: 1 } },
         { new: true }
       )
         .then((data) => {
-          console.log(data, 1);
+          // console.log(data, 1);
           if (data === null) {
             socket.emit("room-not-found");
             return;
@@ -465,7 +465,7 @@ io.on("connection", (socket) => {
             socket.broadcast.to(roomCode).emit("host-enter-in-room");
           } else {
             // can check if host is not available the emit something .....................................................................................................................
-            console.log(getHostDetail(roomCode));
+            // console.log(getHostDetail(roomCode));
             if (getHostDetail(roomCode) === undefined) {
               socket.emit("no-host-available");
             } else {
@@ -476,12 +476,12 @@ io.on("connection", (socket) => {
           const userList = getUsersInRoom(roomCode);
           io.to(roomCode).emit("user-list-inside-the-room", userList);
           if (socket.id !== host) {
-            console.log("call the host " + host);
+            // console.log("call the host " + host);
             setTimeout(() => {
               socket.broadcast.to(host).emit("get-data", { caller: socket.id });
             }, 2000);
           } else {
-            console.log("I am the host");
+            // console.log("I am the host");
           }
         })
         .catch((e) => {
@@ -498,7 +498,7 @@ io.on("connection", (socket) => {
       fullName,
       profileImageUrl,
     }) => {
-      console.log(socket.id);
+      // console.log(socket.id);
       const user = getUserDetail(socket.id);
 
       io.to(user.room).emit("party-message", {
@@ -518,28 +518,28 @@ io.on("connection", (socket) => {
   //...........................................
   socket.on("play-video", (data) => {
     var roomnum = data.room;
-    console.log("1");
+    // console.log("1");
 
     socket.broadcast.to(roomnum).emit("play-video-client");
   });
 
   socket.on("play-other", (data) => {
     var roomnum = data.roomCode;
-    console.log("2");
-    console.log(roomnum);
+    // console.log("2");
+    // console.log(roomnum);
     socket.broadcast.to(roomnum).emit("just-play");
   });
   socket.on("pause-other", (data) => {
     var roomnum = data.roomCode;
-    console.log("3");
-    console.log(roomnum);
+    // console.log("3");
+    // console.log(roomnum);
     socket.broadcast.to(roomnum).emit("just-pause");
   });
   socket.on("seek-other", (data) => {
     var roomnum = data.roomCode;
     var currTime = data.time;
     // var state = data.state;
-    console.log("4");
+    // console.log("4");
     socket.broadcast.to(roomnum).emit("just-seek", {
       time: currTime,
       // state: state
@@ -549,7 +549,7 @@ io.on("connection", (socket) => {
     var roomnum = data.roomCode;
     var currTime = data.time;
     var state = data.state;
-    console.log("4");
+    // console.log("4");
     socket.broadcast.to(roomnum).emit("sync-video-client", {
       time: currTime,
       state: state,
@@ -557,15 +557,15 @@ io.on("connection", (socket) => {
   });
   //.........................
   socket.on("sync-the-host", (data) => {
-    console.log("hello");
-    console.log(data);
+    // console.log("hello");
+    // console.log(data);
     socket.broadcast.to(data.caller).emit("sync-the-video-with-host", {
       time: data.time,
       state: data.state,
     });
   });
   socket.on("sync-the-host-button", (data) => {
-    console.log("hello");
+    // console.log("hello");
     socket.broadcast.to(data.roomCode).emit("sync-the-video-with-host-button", {
       time: data.time,
       state: data.state,
@@ -574,15 +574,15 @@ io.on("connection", (socket) => {
   //........................
   socket.on("sync-host", (data) => {
     if (getHostDetail(data.roomCode) !== undefined) {
-      console.log("sync-host");
+      // console.log("sync-host");
       // var host = io.sockets.adapter.rooms[socket.roomnum].host;
       let host = getHostDetail(data.roomCode).id;
       // console.log(host)
       if (socket.id !== host) {
-        console.log("is host");
+        // console.log("is host");
         socket.broadcast.to(host).emit("get-data", { caller: socket.id });
       } else {
-        console.log("not host");
+        // console.log("not host");
         socket.emit("sync-host-server");
       }
     }
@@ -638,20 +638,20 @@ io.on("connection", (socket) => {
       signal: payload.signal,
       callerID: payload.callerID,
     });
-    console.log("sending singnal");
+    // console.log("sending singnal");
   });
   socket.on("returning-signal", (payload) => {
     socket.broadcast.to(payload.callerID).emit("receiving-returned-signal", {
       signal: payload.signal,
       id: socket.id,
     });
-    console.log("returning singnal");
+    // console.log("returning singnal");
   });
   //............//.....//....................
 
   socket.on("join room", (roomID) => {
     const userList = getUsersInRoom(roomID);
-    console.log(roomID);
+    // console.log(roomID);
     if (users[roomID]) {
       const length = users[roomID].length;
       if (length === 4) {
@@ -662,18 +662,18 @@ io.on("connection", (socket) => {
     } else {
       users[roomID] = [socket.id];
     }
-    console.log(users);
-    console.log(userList);
+    // console.log(users);
+    // console.log(userList);
     socketToRoom[socket.id] = roomID;
     // const usersInThisRoom = userList.filter((user) => user.id !== socket.id);
 
     const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
-    console.log(usersInThisRoom, 23);
+    // console.log(usersInThisRoom, 23);
     socket.emit("all users", usersInThisRoom);
   });
 
   socket.on("sending signal", (payload) => {
-    console.log("sending signal");
+    // console.log("sending signal");
     io.to(payload.userToSignal).emit("user joined", {
       signal: payload.signal,
       callerID: payload.callerID,
@@ -681,7 +681,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("returning signal", (payload) => {
-    console.log("returning signal");
+    // console.log("returning signal");
     io.to(payload.callerID).emit("receiving returned signal", {
       signal: payload.signal,
       id: socket.id,
@@ -721,14 +721,14 @@ io.on("connection", (socket) => {
   //.............//...........//..............
   //......................................................
   socket.on("leaving-party", () => {
-    console.log("leaving-party");
+    // console.log("leaving-party");
     const userDetail = getUserDetail(socket.id);
 
     if (userDetail !== undefined) {
       if (userDetail.host) {
         socket.broadcast.to(userDetail.room).emit("no-host-available");
       }
-      console.log(userDetail);
+      // console.log(userDetail);
       User.findByIdAndUpdate(userDetail.userId, {
         $inc: { watchHour: userDetail.watchSecond},
       }, {new:true})
@@ -740,7 +740,7 @@ io.on("connection", (socket) => {
           )
             .then((data) => {
               const user = removeUser(socket.id);
-              console.log(data);
+              // console.log(data);
               if (users[userDetail.room]) {
                 const indexVideo = users[userDetail.room].filter(
                   (u) => u === socket.id
@@ -756,10 +756,10 @@ io.on("connection", (socket) => {
                   type: "greet",
                 });
                 const userList = getUsersInRoom(user.room);
-                console.log(userList, "leaving");
+                // console.log(userList, "leaving");
                 io.to(user.room).emit("user-list-inside-the-room", userList);
                 io.to(user.room).emit("close-peer");
-                console.log("closePeer");
+                // console.log("closePeer");
                 socket.leave(user.room);
                 // io.to(user.room).emit("party-message", {
                 //   user: "admin",
@@ -782,13 +782,13 @@ io.on("connection", (socket) => {
 
   //...........................................
   socket.on("disconnect", () => {
-    console.log("disconnected user");
+    // console.log("disconnected user");
     const userDetail = getUserDetail(socket.id);
     if (userDetail !== undefined) {
       if (userDetail.host) {
         socket.broadcast.to(userDetail.room).emit("no-host-available");
       }
-      console.log(userDetail);
+      // console.log(userDetail);
       User.findByIdAndUpdate(userDetail.userId, {
        $inc: { watchHour: userDetail.watchSecond},
       }, {new:true})
@@ -800,7 +800,7 @@ io.on("connection", (socket) => {
           )
             .then((data) => {
               const user = removeUser(socket.id);
-              console.log(data);
+              // console.log(data);
               if (users[userDetail.room]) {
                 const indexVideo = users[userDetail.room].filter(
                   (u) => u === socket.id
@@ -817,7 +817,7 @@ io.on("connection", (socket) => {
                 const userList = getUsersInRoom(user.room);
                 io.to(user.room).emit("user-list-inside-the-room", userList);
                 io.to(user.room).emit("close-peer");
-                console.log("closePeer");
+                // console.log("closePeer");
                 socket.leave(user.room);
               }
             })

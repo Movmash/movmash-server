@@ -31,7 +31,7 @@ const addUser = ({
   };
 
   users.push(user);
-  console.log(user);
+  // console.log(user);
   return { user };
 };
 

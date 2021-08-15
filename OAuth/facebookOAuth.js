@@ -27,7 +27,7 @@ passport.use(
       ],
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log(profile._json.picture);
+      // console.log(profile._json.picture);
       const userName = profile._json.name
         .split(" ")
         .join("_")

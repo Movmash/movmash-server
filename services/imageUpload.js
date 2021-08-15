@@ -16,7 +16,7 @@ const uploadProfilePicture = multer({
     bucket: process.env.AWS_MASH_BUCKET,
     // acl: "public-read",
     metadata: function (req, file, cb) {
-      console.log(file)
+      // console.log(file)
       cb(null, { fieldName: "Testing Meta data" });
     },
     key: function (req, file, cb) {
@@ -36,7 +36,7 @@ const uploadCoverPicture = multer({
     bucket: process.env.AWS_MASH_BUCKET,
     // acl: "public-read",
     metadata: function (req, file, cb) {
-      console.log(file);
+      // console.log(file);
       cb(null, { fieldName: "Testing Meta data" });
     },
     key: function (req, file, cb) {

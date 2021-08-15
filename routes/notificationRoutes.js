@@ -21,7 +21,7 @@ exports.getAllNotifications = (req, res) => {
     // .populate("recipientId", "_id userName profileImageUrl")
     .sort("-createdAt")
     .then((notification) => {
-      console.log(notification,12);
+      // console.log(notification,12);
       return res.status(200).json(notification);
     })
     .catch((e) => {

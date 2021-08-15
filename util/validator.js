@@ -49,7 +49,7 @@ exports.validateLoginData = (data) => {
 
 exports.reduceUserDetail = (data) => {
   let userDetails = {};
-  console.log(data);
+  // console.log(data);
 
   //   if (!isEmpty(data.bio.trim())) userDetails.bio = data.bio;
   //   if (!isEmpty(data.website.trim())) {

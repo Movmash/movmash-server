@@ -45,7 +45,7 @@ s3.deleteObject(
     Key: "CoverPicture/1623327493965-Ankur.png",
   },
   (err, data) => {
-    console.log(data);
+    // console.log(data);
   }
 );
 }
@@ -57,7 +57,7 @@ exports.deleteCoverImage = (req, res) => {
       Key: "CoverPicture/1623327493965-Ankur.png",
     },
     (err, data) => {
-      console.log(data);
+      // console.log(data);
     }
   );
 };

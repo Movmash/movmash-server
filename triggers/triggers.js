@@ -391,7 +391,7 @@ changeStreamForLikes.on("change", (change) => {
         };
         Notification.create(newCommentNotification)
           .then((doc) => {
-            console.log(doc);
+            // console.log(doc);
           })
           .catch((e) => {
             console.log(e);
@@ -404,7 +404,7 @@ changeStreamForLikes.on("change", (change) => {
       type: "like",
     }).exec((err, result) => {
       if (err) console.log(err);
-      console.log(result);
+      // console.log(result);
     });
   }
 });
@@ -418,7 +418,7 @@ changeStreamForFollowing.on("change", (change) => {
       if (
         typeof change.updateDescription.updatedFields.followers === "undefined"
       ) {
-        console.log("follow");
+        // console.log("follow");
         // console.log(
         //   change.updateDescription.updatedFields[
         //     Object.keys(change.updateDescription.updatedFields)[0]
@@ -434,14 +434,14 @@ changeStreamForFollowing.on("change", (change) => {
         };
         Notification.create(newFollowNotification)
           .then((doc) => {
-            console.log(doc);
+            // console.log(doc);
           })
           .catch((e) => {
             console.log(e);
           });
       } else {
-        console.log("unfollow");
-        console.log(change);
+        // console.log("unfollow");
+        // console.log(change);
         const followerUserId = change.updateDescription.updatedFields.followers;
         Notification.deleteMany(
           { type: "following", senderId: { $nin: followerUserId } },
@@ -474,7 +474,7 @@ changeStreamForComments.on("change", (change) => {
           };
           Notification.create(newCommentNotification)
             .then((newNotification) => {
-              console.log(newNotification);
+              // console.log(newNotification);
             })
             .catch((e) => {
               console.log(e);
@@ -490,7 +490,7 @@ changeStreamForComments.on("change", (change) => {
       type: "comment",
     }).exec((err, result) => {
       if (err) console.log(err);
-      console.log(result);
+      // console.log(result);
     });
   }
   if (change.operationType === "update") {
@@ -524,8 +524,8 @@ changeStreamForComments.on("change", (change) => {
                 };
                 Notification.create(newLikeOfCommentNotification)
                   .then((doc) => {
-                    console.log("1");
-                    console.log(doc);
+                    // console.log("1");
+                    // console.log(doc);
                   })
                   .catch((e) => {
                     console.log(e);
@@ -545,8 +545,6 @@ changeStreamForComments.on("change", (change) => {
                   Object.keys(change.updateDescription.updatedFields)[1]
                 ].toString()
               ) {
-                console.log("heoll");
-                console.log("heolasdasdal");
                 const newLikeOfCommentNotification = {
                   type: "comment like",
                   senderId:
@@ -559,8 +557,8 @@ changeStreamForComments.on("change", (change) => {
                 };
                 Notification.create(newLikeOfCommentNotification)
                   .then((doc) => {
-                    console.log("2");
-                    console.log(doc);
+                    // console.log("2");
+                    // console.log(doc);
                   })
                   .catch((e) => {
                     console.log(e);
@@ -571,9 +569,9 @@ changeStreamForComments.on("change", (change) => {
               console.log(e);
             });
         }
-        console.log("liked");
+        // console.log("liked");
       } else {
-        console.log(change);
+        // console.log(change);
         if ("likes" in change.updateDescription.updatedFields) {
           const likeUserId = change.updateDescription.updatedFields.likes;
           Notification.deleteMany(
@@ -583,7 +581,7 @@ changeStreamForComments.on("change", (change) => {
             }
           );
         }
-        console.log("dislike");
+        // console.log("dislike");
       }
     }
   }

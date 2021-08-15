@@ -400,7 +400,7 @@ exports.getFollowersDetails = (req, res) => {
     });
 };
 exports.getFollowingsDetails = (req, res) => {
-  console.log(1,2);
+  // console.log(1,2);
   User.findOne({ _id: req.user._id })
     .select("followings")
     .populate("followings", "_id userName profileImageUrl")

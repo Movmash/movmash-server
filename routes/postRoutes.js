@@ -7,7 +7,7 @@ exports.postOnePosts = (req, res) => {
   // console.log(req.user);
   switch (req.body.type) {
     case "review":
-      console.log("1");
+      // console.log("1");
       if (req.body.review.trim() === "") {
         return res
           .status(400)
@@ -48,7 +48,7 @@ exports.postOnePosts = (req, res) => {
         });
       break;
     case "ticket":
-      console.log("2");
+      // console.log("2");
       const newTicketPost = {
         postedBy: req.user,
         type: req.body.type,
@@ -84,7 +84,7 @@ exports.postOnePosts = (req, res) => {
         });
       break;
     case "suggestMe":
-      console.log("3");
+      // console.log("3");
       // if (req.body.description.trim() === "") {
       //   return res
       //     .status(400)
@@ -120,12 +120,12 @@ exports.postOnePosts = (req, res) => {
       break;
 
     default:
-      console.log("invalid post");
+      // console.log("invalid post");
       break;
   }
 };
 exports.likePost = (req, res) => {
-  console.log("hell");
+  // console.log("hell");
   Like.exists(
     { postId: req.body.postId, likedBy: req.user._id },
     function (err, docs) {
@@ -508,13 +508,13 @@ exports.getMashUserPost = (req, res) => {
         });
     })
     .catch((e) => {
-      console.log("user Not found");
+      // console.log("user Not found");
       console.log(e);
     });
 };
 
 exports.getPostDetails = (req,res) => {
-  console.log(req.params.postId)
+  // console.log(req.params.postId)
   Post.findById(req.params.postId)
     .populate("postedBy", "_id profileImageUrl userName email fullName")
     .populate({
@@ -540,7 +540,7 @@ exports.getPostDetails = (req,res) => {
 //........... booking ticket management
 
 exports.sendBookingRequest = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const bookingRequest = {
     postId: req.body.postId,
     postedBy: req.body.postedBy,
@@ -607,7 +607,7 @@ exports.getRequestedTicket = (req, res) => {
 };
 
 exports.cancelRequestedTicket = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   TicketRequest.findOneAndDelete({
     postId: req.params.postId,
     $or: [

@@ -37,7 +37,7 @@ exports.updateList = (req, res) => {
   List.findByIdAndUpdate(req.body.id, newList, { new: true })
 
     .then((doc) => {
-      console.log(doc);
+      // console.log(doc);
       List.findOne({ _id: doc._id })
         .populate("createdBy", "profileImageUrl userName fullname")
         .then((newDoc) => {
@@ -171,7 +171,7 @@ exports.likeMovie = (req, res) => {
         for (let i = 0; i < genreName.length; i++) {
           updatedGenre.$inc[genreName[i]] = 1;
         }
-        console.log(updatedGenre);
+        // console.log(updatedGenre);
         // UserGenrePreference.findOne({ user: req.user._id }).then((user) => {
         //   if (!user) {
         //     UserGenrePreference.create({ user: req.user._id })
@@ -207,7 +207,7 @@ exports.likeMovie = (req, res) => {
           { new: true, upsert: true }
         )
           .then((pref) => {
-            console.log(pref);
+            // console.log(pref);
           })
           .catch((e) => {
             console.log(e);
@@ -243,7 +243,7 @@ exports.dislikeMovie = (req, res) => {
         for (let i = 0; i < genreName.length; i++) {
           updatedGenre.$inc[genreName[i]] = -1;
         }
-        console.log(updatedGenre);
+        // console.log(updatedGenre);
         UserGenrePreference.findOneAndUpdate(
           { user: req.user._id },
           updatedGenre,
@@ -253,7 +253,7 @@ exports.dislikeMovie = (req, res) => {
           }
         )
           .then((pref) => {
-            console.log(pref);
+            // console.log(pref);
           })
           .catch((e) => {
             console.log(e);
@@ -281,7 +281,7 @@ exports.undoDislikeMovie = (req, res) => {
       for (let i = 0; i < genreName.length; i++) {
         updatedGenre.$inc[genreName[i]] = 1;
       }
-      console.log(updatedGenre);
+      // console.log(updatedGenre);
       UserGenrePreference.findOneAndUpdate(
         { user: req.user._id },
         updatedGenre,
@@ -291,7 +291,7 @@ exports.undoDislikeMovie = (req, res) => {
         }
       )
         .then((pref) => {
-          console.log(pref);
+          // console.log(pref);
         })
         .catch((e) => {
           console.log(e);
@@ -316,7 +316,7 @@ exports.undoLikeMovie = (req, res) => {
       for (let i = 0; i < genreName.length; i++) {
         updatedGenre.$inc[genreName[i]] = -1;
       }
-      console.log(updatedGenre);
+      // console.log(updatedGenre);
       UserGenrePreference.findOneAndUpdate(
         { user: req.user._id },
         updatedGenre,
@@ -548,7 +548,7 @@ exports.upcomingCovers = (req, res) => {
     })
     .catch((e) => {
       console.log(e);
-      console.log("hello");
+      // console.log("hello");
       return res.status(500).json(e.message);
     });
 };
@@ -556,7 +556,7 @@ exports.upcomingCovers = (req, res) => {
 exports.movieLists = (req, res) => {
   const genre = req.params.genreName;
   const page = req.params.pageNumber;
-  console.log(genre)
+  // console.log(genre)
   switch (genre) {
     case "Trending":
       axios
@@ -581,7 +581,7 @@ exports.movieLists = (req, res) => {
         });
       break;
     case "Action":
-      console.log(genre);
+      // console.log(genre);
       axios
         .get(requests.fetchActionMovies + `&page=${page}`)
         .then((response) => {
