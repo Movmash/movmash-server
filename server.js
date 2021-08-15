@@ -11,6 +11,7 @@ const {
   updateWatchSecond,
 } = require("./util/userManagement");
 const app = express();
+const path = require("path");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const socketio = require("socket.io");
@@ -154,6 +155,7 @@ const swaggerDocs = swaggerJsDoc(swaggerOption);
 const cookieSession = require('cookie-session');
 const passport = require("passport");
 const { profileImageUpload, coverImageUpload, deleteProfileImage } = require("./routes/fileRoutes");
+
 app.use(
   cookieSession({
     maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -171,6 +173,52 @@ app.use(express.json());
 //....................................................................................
 
 const db = mongoose.connection;
+
+// app.get("login", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/live", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("search", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/movie/:id", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/signup", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/@:userName", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/message/inbox", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/messages/inbox/:roomId", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/browse/people", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/browse/lists", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/browse/tickets", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/browse/genre/:genreName", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/post/:postId", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/live/create", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
+// app.get("/live/room/:roomCode", (req, res) => {
+//   res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
 //....................................................................................
 app.get("/api/v1/movie/search-movie", searchMovie);
 
@@ -340,6 +388,7 @@ app.put(
 app.post("/api/v1/upload-image/profile", profileImageUpload);
 app.post("/api/v1/upload-image/cover",coverImageUpload);
 app.post("/api/v1/delete-image/cover", deleteProfileImage);
+//.........................................................
 
 //.................................... [web sockets] .........................................
 
@@ -850,6 +899,11 @@ mongoose
   .catch((e) => console.log(e));
 //...........................................................
 require("./routes/authRoutes")(app);
+app.use(express.static(path.join(__dirname, "build")));
+//...............................................................................
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+});
 // app.use(authRoutes);
 // app.get("/auth/google",googleAuth);
 // app.get("/auth/google/callback", googleAuthCallback);
