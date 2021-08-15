@@ -109,6 +109,17 @@ exports.createChatRoom = (req, res) => {
                     read: false,
                     roomId: room._id,
                   };
+                } else if(req.body.type === "roomlink") {
+                  firstConversation = {
+                    sender: req.user._id,
+                    recipient: req.body.userId,
+                    message: req.body.message,
+                    type: req.body.type,
+                    //  postData: req.body.postData,
+                    read: false,
+                    roomId: room._id,
+                  };
+                  
                 } else {
                   firstConversation = {
                     sender: req.user._id,
@@ -188,6 +199,16 @@ exports.createChatRoom = (req, res) => {
             message: "shared a post",
             type: req.body.type,
             postData: req.body.postData,
+            read: false,
+            roomId: doc._id,
+          };
+        }else if (req.body.type === "roomText") {
+          firstConversation = {
+            sender: req.user._id,
+            recipient: req.body.userId,
+             message: req.body.message,
+             type: req.body.type,
+            //  postData: req.body.postData,
             read: false,
             roomId: doc._id,
           };

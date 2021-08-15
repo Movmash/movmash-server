@@ -12,9 +12,10 @@ exports.getLiveShowDetails = (req, res) => {
 };
 
 exports.getAllLiveShow = (req, res) => {
-  LiveShow.find({ privacy: "Public" })
+  LiveShow.find({ $and: [{ privacy: "Public" }, { memberNumber: { $gt: 0 }}] })
     .populate("host", "userName profileImageUrl fullName")
     .then((data) => {
+      console.log(data)
       return res.status(200).json(data);
     })
     .catch((e) => {
@@ -28,6 +29,7 @@ exports.getFollowingsLiveShow = (req, res) => {
     .then((data) => {
       LiveShow.find({
         $or: [{ host: data.followings }, { host: req.user._id }],
+        memberNumber: { $gt: 0 },
       })
         .populate("host", "userName profileImageUrl fullName")
         .then((doc) => {
@@ -45,7 +47,11 @@ exports.getFollowingsLiveShow = (req, res) => {
 };
 
 exports.getGenreLiveShow = (req, res) => {
-  LiveShow.find({ privacy: "Public", genre: req.params.genre })
+  LiveShow.find({
+    privacy: "Public",
+    genre: req.params.genre,
+    memberNumber: { $gt: 0 },
+  })
     .populate("host", "userName profileImageUrl fullName")
     .then((data) => {
       return res.status(200).json(data);

@@ -28,9 +28,9 @@ const userSchema = new Schema(
     coverImageUrl: {
       type: String,
       default:
-        "https://www.setaswall.com/wp-content/uploads/2017/06/Closed-FB-Cover-Photo-851-x-315.jpg",
+        "https://movmash.s3.ap-south-1.amazonaws.com/default/cover-photo/default-cover.jpg",
     },
-    genre: [{type: String, default:""}],
+    genre: [{ type: String, default: "" }],
     bio: String,
     followersCount: {
       type: Number,
