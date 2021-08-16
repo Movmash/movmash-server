@@ -852,7 +852,7 @@ app.set("socketio", io);
 mongoose
   .connect(process.env.DB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: false,
+    useUnifiedTopology: true,
   })
   .then(() => {
     server.listen(port, () => {
