@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const { v4: uuidv4 } = require("uuid");
 exports.getLiveShowDetails = (req, res) => {
   LiveShow.findOne({ roomCode: req.params.roomCode })
+    .populate("host", "userName profileImageUrl fullName")
     .then((data) => {
       return res.status(200).json(data);
     })
@@ -12,9 +13,10 @@ exports.getLiveShowDetails = (req, res) => {
 };
 
 exports.getAllLiveShow = (req, res) => {
-  LiveShow.find({ privacy: "Public" })
+  LiveShow.find({ $and: [{ privacy: "Public" }, { memberNumber: { $gt: 0 }}] })
     .populate("host", "userName profileImageUrl fullName")
     .then((data) => {
+      // console.log(data)
       return res.status(200).json(data);
     })
     .catch((e) => {
@@ -28,6 +30,7 @@ exports.getFollowingsLiveShow = (req, res) => {
     .then((data) => {
       LiveShow.find({
         $or: [{ host: data.followings }, { host: req.user._id }],
+        memberNumber: { $gt: 0 },
       })
         .populate("host", "userName profileImageUrl fullName")
         .then((doc) => {
@@ -45,7 +48,11 @@ exports.getFollowingsLiveShow = (req, res) => {
 };
 
 exports.getGenreLiveShow = (req, res) => {
-  LiveShow.find({ privacy: "Public", genre: req.params.genre })
+  LiveShow.find({
+    privacy: "Public",
+    genre: req.params.genre,
+    memberNumber: { $gt: 0 },
+  })
     .populate("host", "userName profileImageUrl fullName")
     .then((data) => {
       return res.status(200).json(data);
@@ -72,7 +79,7 @@ exports.createLiveShow = (req, res) => {
         ? "https://www.youtube.com/watch?v=vuQR6Mj64jQ"
         : req.body.videoUrl,
   };
-  console.log(liveShowDetail);
+  // console.log(liveShowDetail);
   LiveShow.findOneAndUpdate({ host: req.user._id }, liveShowDetail, {
     upsert: true,
     setDefaultsOnInsert: true,

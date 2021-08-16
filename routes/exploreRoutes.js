@@ -17,7 +17,7 @@ exports.getUserRecommendation = (req, res) => {
             (pref) => pref.user._id.toString() !== req.user._id.toString()
           );
           let genrePercent = [];
-          console.log(otherUserGenrePreference[0].user);
+          // console.log(otherUserGenrePreference[0].user);
           //for loop
           for (let i = 0; i < otherUserGenrePreference.length; i++) {
             if (
@@ -223,8 +223,8 @@ exports.getUserRecommendation = (req, res) => {
                 )
               );
             }
-            console.log(genrePercent);
-            console.log(otherUserGenrePreference[i]);
+            // console.log(genrePercent);
+            // console.log(otherUserGenrePreference[i]);
             results.push({
               similiarity:
                 genrePercent.reduce((a, b) => a + b, 0) / genrePercent.length,

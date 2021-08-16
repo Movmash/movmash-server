@@ -7,7 +7,7 @@ exports.postOnePosts = (req, res) => {
   // console.log(req.user);
   switch (req.body.type) {
     case "review":
-      console.log("1");
+      // console.log("1");
       if (req.body.review.trim() === "") {
         return res
           .status(400)
@@ -48,7 +48,7 @@ exports.postOnePosts = (req, res) => {
         });
       break;
     case "ticket":
-      console.log("2");
+      // console.log("2");
       const newTicketPost = {
         postedBy: req.user,
         type: req.body.type,
@@ -84,7 +84,7 @@ exports.postOnePosts = (req, res) => {
         });
       break;
     case "suggestMe":
-      console.log("3");
+      // console.log("3");
       // if (req.body.description.trim() === "") {
       //   return res
       //     .status(400)
@@ -104,7 +104,6 @@ exports.postOnePosts = (req, res) => {
         .then((doc) => {
           User.findOneAndUpdate(
             { userName: req.user.userName },
-            { $inc: { postNumber: 1 } }
           )
             .then(() => {
               return res.status(201).json(doc);
@@ -121,12 +120,12 @@ exports.postOnePosts = (req, res) => {
       break;
 
     default:
-      console.log("invalid post");
+      // console.log("invalid post");
       break;
   }
 };
 exports.likePost = (req, res) => {
-  console.log("hell");
+  // console.log("hell");
   Like.exists(
     { postId: req.body.postId, likedBy: req.user._id },
     function (err, docs) {
@@ -200,6 +199,29 @@ exports.deletePost = (req, res) => {
       if (err || !post) return res.status(422).json({ error: err });
 
       if (post.postedBy._id.toString() === req.user._id.toString()) {
+        if(post.type === "ticket"){
+
+        post
+          .remove()
+          .then((result) => {
+            User.findByIdAndUpdate(
+              post.postedBy._id,
+              { new: true }
+            )
+              .select("-password")
+              .then((doc) => {
+                // console.log(doc);
+              })
+              .catch((e) => {
+                console.log(e);
+              });
+            return res.status(201).json(result);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+        }else {
+
         post
           .remove()
           .then((result) => {
@@ -210,7 +232,7 @@ exports.deletePost = (req, res) => {
             )
               .select("-password")
               .then((doc) => {
-                console.log(doc);
+                // console.log(doc);
               })
               .catch((e) => {
                 console.log(e);
@@ -220,6 +242,7 @@ exports.deletePost = (req, res) => {
           .catch((e) => {
             console.log(e);
           });
+        }
       }
     });
   // Post.findOne({_id:req.params.pos})
@@ -227,23 +250,33 @@ exports.deletePost = (req, res) => {
 
 exports.getSubscribedPost = (req, res) => {
   // pagination require ............................
-  Post.find({
-    postedBy: { $in: [...req.user.followings, req.user._id] },
-    postType: { $ne: "explore" },
+  const timeFilter = new Date().setHours(new Date().getHours() - 6);
+  Post.deleteMany({
+    showTimeTo: { $lt: timeFilter },
+    postedBy: req.user._id,
   })
-    .populate("postedBy", "_id email userName profileImageUrl")
-    .populate({
-      path: "comments",
-      model: "Comment",
-      populate: {
-        path: "commentedBy",
-        select: "_id email userName profileImageUrl",
-        model: "User",
-      },
-    })
-    .sort("-createdAt")
-    .then((posts) => {
-      return res.status(200).json(posts);
+    .then(() => {
+        Post.find({
+          postedBy: { $in: [...req.user.followings, req.user._id] },
+          postType: { $ne: "explore" },
+        })
+          .populate("postedBy", "_id email userName profileImageUrl")
+          .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+              path: "commentedBy",
+              select: "_id email userName profileImageUrl",
+              model: "User",
+            },
+          })
+          .sort("-createdAt")
+          .then((posts) => {
+            return res.status(200).json(posts);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
     })
     .catch((e) => {
       console.log(e);
@@ -252,7 +285,7 @@ exports.getSubscribedPost = (req, res) => {
 
 exports.getMyPost = (req, res) => {
   // pageination require ......................................
-  console.log(req.user._id);
+  // console.log(req.user._id);
   Post.find({ postedBy: req.user._id })
     .populate("postedBy", "_id email userName profileImageUrl")
     .populate({
@@ -275,7 +308,7 @@ exports.getMyPost = (req, res) => {
 };
 
 exports.postComment = (req, res) => {
-  console.log(req.body.comment);
+  // console.log(req.body.comment);
   if (req.body.comment.trim() === "")
     return res.status(422).json({ message: "commet should not be empty" });
   if (req.body.postType === "review") {
@@ -288,7 +321,7 @@ exports.postComment = (req, res) => {
 
     Comment.create(newComment)
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         Post.findByIdAndUpdate(
           req.body.postId,
           { $push: { comments: result._id }, $inc: { commentCount: 1 } },
@@ -327,7 +360,7 @@ exports.postComment = (req, res) => {
 
     Comment.create(newComment)
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         Post.findByIdAndUpdate(
           req.body.postId,
           { $push: { comments: result._id }, $inc: { commentCount: 1 } },
@@ -357,7 +390,7 @@ exports.deleteComment = (req, res) => {
   Comment.findOne({ _id: req.params.commentId })
     .populate("commentedBy", "_id")
     .exec((err, comment) => {
-      console.log(comment);
+      // console.log(comment);
       if (err || !comment) return res.status(422).json(err);
       if (comment.commentedBy._id.toString() === req.user._id.toString()) {
         comment.remove().then((result) => {
@@ -370,8 +403,8 @@ exports.deleteComment = (req, res) => {
             { new: true }
           )
             .then((doc) => {
-              console.log(doc);
-              console.log(result);
+              // console.log(doc);
+              // console.log(result);
               return res.status(201).json({ doc, result });
             })
             .catch((e) => {
@@ -382,29 +415,32 @@ exports.deleteComment = (req, res) => {
     });
 };
 exports.likeComment = (req, res) => {
-  Comment.find({$and :[{ _id: req.body.commentId },{ likes: { $in: req.user._id } }]}, (err, docs) => {
-    if (err) return res.status(422).json({ error: err });
-    else {
-      if (docs.length === 0) {
-        Comment.findByIdAndUpdate(
-          req.body.commentId,
-          {
-            $push: { likes: req.user._id },
-            $inc: { likeCount: 1 },
-          },
-          { new: true }
-        ).exec((err, result) => {
-          if (err) return res.status(422).json({ error: err });
-          return res.status(201).json(result);
-        });
-      } else {
-        Comment.findById(req.body.commentId).exec((err, result) => {
-          if (err) return res.status(422).json({ error: err });
-          return res.status(201).json(result);
-        });
+  Comment.find(
+    { $and: [{ _id: req.body.commentId }, { likes: { $in: req.user._id } }] },
+    (err, docs) => {
+      if (err) return res.status(422).json({ error: err });
+      else {
+        if (docs.length === 0) {
+          Comment.findByIdAndUpdate(
+            req.body.commentId,
+            {
+              $push: { likes: req.user._id },
+              $inc: { likeCount: 1 },
+            },
+            { new: true }
+          ).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            return res.status(201).json(result);
+          });
+        } else {
+          Comment.findById(req.body.commentId).exec((err, result) => {
+            if (err) return res.status(422).json({ error: err });
+            return res.status(201).json(result);
+          });
+        }
       }
     }
-  });
+  );
 };
 
 exports.unlikeComment = (req, res) => {
@@ -453,13 +489,13 @@ exports.getMashUserPost = (req, res) => {
     .then((user) => {
       Post.find({ postedBy: user._id })
         .sort("-createdAt")
-        .populate("postedBy", "_id email userName profileImageUrl")
+        .populate("postedBy", "_id profileImageUrl userName email fullName")
         .populate({
           path: "comments",
           model: "Comment",
           populate: {
             path: "commentedBy",
-            select: "_id email userName profileImageUrl",
+            select: "_id profileImageUrl userName email fullName",
             model: "User",
           },
         })
@@ -472,14 +508,39 @@ exports.getMashUserPost = (req, res) => {
         });
     })
     .catch((e) => {
-      console.log("user Not found");
+      // console.log("user Not found");
       console.log(e);
     });
 };
+
+exports.getPostDetails = (req,res) => {
+  // console.log(req.params.postId)
+  Post.findById(req.params.postId)
+    .populate("postedBy", "_id profileImageUrl userName email fullName")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "commentedBy",
+        select: "_id profileImageUrl userName email fullName",
+        model: "User",
+      },
+    })
+    .then((postDetail) => {
+      if (postDetail === null) {
+        return res.status(404).json({ message: "postNotFound" });
+      } else {
+        return res.status(200).json(postDetail);
+      }
+    })
+    .catch((e) => {
+      return res.status(422).json({ message: "postNotFound" });
+    });
+}
 //........... booking ticket management
 
 exports.sendBookingRequest = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const bookingRequest = {
     postId: req.body.postId,
     postedBy: req.body.postedBy,
@@ -491,8 +552,8 @@ exports.sendBookingRequest = (req, res) => {
   TicketRequest.create(bookingRequest)
     .then((doc) => {
       TicketRequest.findById(doc._id)
-        .populate("postedBy", "profileImageUrl userName email")
-        .populate("requestedBy", "profileImageUrl userName email")
+        .populate("postedBy", "profileImageUrl userName email fullName")
+        .populate("requestedBy", "profileImageUrl userName email fullName")
         .populate("postId")
 
         .then((ticket) => {
@@ -502,7 +563,7 @@ exports.sendBookingRequest = (req, res) => {
             { new: true }
           )
             .then((post) => {
-              console.log(ticket);
+              // console.log(ticket);
               return res.status(201).json(ticket);
             })
             .catch((e) => {
@@ -520,41 +581,70 @@ exports.sendBookingRequest = (req, res) => {
 };
 
 exports.getRequestedTicket = (req, res) => {
-  TicketRequest.find({ requestedBy: req.user._id })
-    .populate("postedBy", "profileImageUrl userName email")
-    .populate("requestedBy", "profileImageUrl userName email")
-    .populate("postId")
-    .sort("-createdAt")
-    .then((data) => {
-      //................
-      return res.status(200).json(data);
+  const timeFilter = new Date().setHours(new Date().getHours() - 6);
+  TicketRequest.deleteMany({ showTimeTo: { $lt: timeFilter } })
+    .then(() => {
+      TicketRequest.find({
+        $or: [{ requestedBy: req.user._id }, { postedBy: req.user._id }],
+      })
+        .populate("postedBy", "profileImageUrl userName email fullName")
+        .populate("requestedBy", "profileImageUrl userName email fullName")
+        .populate("postId")
+        .sort("-createdAt")
+        .then((data) => {
+          //................
+          return res.status(200).json(data);
+        })
+        .catch((e) => {
+          console.log(e);
+          return res.status(500).json({ error: e });
+        });
     })
     .catch((e) => {
       console.log(e);
-      return res.status(500).json({ error: e });
+      // return res.status(500).json({ error: e });
     });
 };
 
 exports.cancelRequestedTicket = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   TicketRequest.findOneAndDelete({
     postId: req.params.postId,
-    requestedBy: req.user._id,
+    $or: [
+      { requestedBy: req.body.requestedBy },
+      { postedBy: req.body.postedBy },
+    ],
   })
     .then((doc) => {
-      Post.findByIdAndUpdate(
-        req.params.postId,
-        {
-          $pull: { bookingRequest: req.user._id },
-        },
-        { new: true }
-      )
-        .then((post) => {
-          return res.status(201).json({ deleted: "successfully" });
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      if (req.body.requestedBy === req.body.postedBy) {
+        Post.findByIdAndUpdate(
+          req.params.postId,
+          {
+            $pull: { bookingRequest: req.body.postedBy },
+          },
+          { new: true }
+        )
+          .then((post) => {
+            return res.status(201).json({ deleted: "successfully" });
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } else {
+        Post.findByIdAndUpdate(
+          req.params.postId,
+          {
+            $pull: { bookingRequest: req.body.requestedBy },
+          },
+          { new: true }
+        )
+          .then((post) => {
+            return res.status(201).json({ deleted: "successfully" });
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
     })
     .catch((e) => {
       console.log(e);
