@@ -1,9 +1,9 @@
 let serverBaseURL = "";
 let clientBaseURL = "";
 
-if(process.env.NODE_ENV === "development"){
-    serverBaseURL = "http://localhost:8000";
-    clientBaseURL = "http://localhost:3000";
+if (process.env.SERVER_ENV === "development") {
+  serverBaseURL = "http://localhost:8000";
+  clientBaseURL = "http://localhost:3000";
 }
 
 module.exports = Object.freeze({
