@@ -12,7 +12,7 @@ const {
 } = require("./util/userManagement");
 const app = express();
 const path = require("path");
-// const cors = require("cors");
+const cors = require("cors");
 const xss = require("xss-clean");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -37,6 +37,7 @@ const User = require("./models/userModel");
 const Conversation = require("./models/conversationModel");
 const Notification = require("./models/notificationModel");
 const Room = require("./models/roomModel");
+const {CLIENT_BASE_URL} = require("./util/constantConfig");
 const {
   signup,
   login,
@@ -171,7 +172,12 @@ app.use(
     keys: [process.env.COOKIE_KEY]
   })
 );
-// app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(
+  cors({
+    credentials: true,
+    origin: CLIENT_BASE_URL,
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
