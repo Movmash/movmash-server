@@ -200,7 +200,7 @@ exports.getMashUserDetails = (req, res) => {
 };
 
 exports.getUser = (req, res) => {
-  User.findOne({ email: req.user.email })
+  User.findOne({ authId: req.user.authId })
     .select("-password")
     .then((user) => {
       if (!user) return res.status(404).json({ message: "user Not Found" });
@@ -244,56 +244,147 @@ exports.getUser = (req, res) => {
 // };
 
 exports.followUser = (req, res) => {
-  User.findByIdAndUpdate(
-    req.body.followId,
-    { $push: { followers: req.user._id }, $inc: { followersCount: 1 } },
-    { new: true }
-  ).exec((err, result) => {
-    if (err) return res.status(422).json(err);
-    User.findOneAndUpdate(
-      { _id: req.user._id },
-      {
-        $push: { followings: req.body.followId },
-        $inc: { followingsCount: 1 },
-      },
-      { new: true }
-    )
-      .select("-password")
-      .exec((err, doc) => {
-        if (err) {
-          console.log(err);
-          return res.status(503).json(err);
+  User.find(
+    {
+      $and: [{ _id: req.body.followId }, { followers: { $in: req.user._id } }],
+    },
+    (err, docs) => {
+      if (err) return res.status(503).json(err);
+      else {
+        if (docs.length == 0) {
+          User.findByIdAndUpdate(
+            req.body.followId,
+            { $push: { followers: req.user._id }, $inc: { followersCount: 1 } },
+            { new: true }
+          ).exec((err, result) => {
+            if (err) return res.status(422).json(err);
+            User.findOneAndUpdate(
+              { _id: req.user._id },
+              {
+                $push: { followings: req.body.followId },
+                $inc: { followingsCount: 1 },
+              },
+              { new: true }
+            )
+              .select("-password")
+              .exec((err, doc) => {
+                if (err) {
+                  return res.status(503).json(err);
+                }
+                return res.status(201).json(result);
+              });
+          });
+        } else {
+          User.findById(req.body.followId).exec((err, docs) => {
+            if (err) return res.status(503).json(err);
+            return res.status(201).json(docs);
+          });
         }
-        return res.status(201).json(result);
-      });
-  });
+      }
+    }
+  );
 };
 
 exports.unfollowUser = (req, res) => {
-  console.log("heelll yyaa");
-  User.findByIdAndUpdate(
-    req.body.unfollowId,
-    { $pull: { followers: req.user._id }, $inc: { followersCount: -1 } },
-    { new: true },
-    (err, doc) => {
+  User.find(
+    {
+      $and: [
+        { _id: req.body.unfollowId },
+        { followers: { $in: req.user._id } },
+      ],
+    },
+    (err, docs) => {
       if (err) return res.status(422).json(err);
-      User.findByIdAndUpdate(
-        { _id: req.user._id },
-        {
-          $pull: { followings: req.body.unfollowId },
-          $inc: { followingsCount: -1 },
-        },
-        { new: true }
-      )
-        .select("-password")
-        .then((result) => {
-          return res.status(201).json(doc);
-        })
-        .catch((e) => {
-          return res.status(422).json({ error: err });
-        });
+      else {
+        if (docs.length === 1) {
+          User.findByIdAndUpdate(
+            req.body.unfollowId,
+            {
+              $pull: { followers: req.user._id },
+              $inc: { followersCount: -1 },
+            },
+            { new: true },
+            (err, doc) => {
+              if (err) return res.status(422).json(err);
+              User.findByIdAndUpdate(
+                { _id: req.user._id },
+                {
+                  $pull: { followings: req.body.unfollowId },
+                  $inc: { followingsCount: -1 },
+                },
+                { new: true }
+              )
+                .select("-password")
+                .then((result) => {
+                  return res.status(201).json(doc);
+                })
+                .catch((e) => {
+                  return res.status(422).json({ error: err });
+                });
+            }
+          );
+        } else {
+          User.findById(req.body.unfollowId).exec((err, docs) => {
+            if (err) return res.status(503).json(err);
+            return res.status(201).json(docs);
+          });
+        }
+      }
     }
   );
+ 
+};
+
+exports.removeFollower = (req,res) => {
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $pull: { followers: req.body.removeFollowerId },
+      $inc: { followersCount: -1 },
+    },
+    { new: true }
+  )
+    .then((user) => {
+      User.findByIdAndUpdate(req.body.removeFollowerId, {
+        $pull: { followings: req.user._id },
+        $inc: { followingsCount: -1 },
+      })
+        .then((removedUser) => {
+          return res.status(201).json(user);
+        })
+        .catch((e) => {
+          return res.status(422).json(e);
+        });
+    })
+    .catch((e) => {
+      return res.status(422).json(e);
+    });
+}
+
+exports.undoRemoveFollower = (req, res) => {
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $push: { followers: req.body.removeFollowerId },
+      $inc: { followersCount: 1 },
+    },
+    { new: true }
+  )
+    .then((user) => {
+      User.findByIdAndUpdate(req.body.removeFollowerId, {
+        $push: { followings: req.user._id },
+        $inc: { followingsCount: 1 },
+      })
+        .then((removedUser) => {
+          return res.status(201).json(user);
+        })
+        .catch((e) => {
+          return res.status(422).json(e);
+        });
+    })
+    .catch((e) => {
+      return res.status(422).json(e);
+    });
 };
 
 exports.getFollowersDetails = (req, res) => {
@@ -309,6 +400,7 @@ exports.getFollowersDetails = (req, res) => {
     });
 };
 exports.getFollowingsDetails = (req, res) => {
+  // console.log(1,2);
   User.findOne({ _id: req.user._id })
     .select("followings")
     .populate("followings", "_id userName profileImageUrl")
@@ -320,15 +412,38 @@ exports.getFollowingsDetails = (req, res) => {
       return res.status(422).json(e);
     });
 };
-
+exports.getFollowersDetailsProfile = (req, res) => {
+  User.findById(req.params.userId )
+    .select("followers")
+    .populate("followers", "_id userName profileImageUrl")
+    .then((doc) => {
+      return res.status(200).json(doc.followers);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(422).json(e);
+    });
+};
+exports.getFollowingsDetailsProfile = (req, res) => {
+  User.findById(req.params.userId)
+    .select("followings")
+    .populate("followings", "_id userName profileImageUrl")
+    .then((doc) => {
+      return res.status(200).json(doc.followings);
+    })
+    .catch((e) => {
+      console.log(e);
+      return res.status(422).json(e);
+    });
+};
 exports.updateUserDetails = (req, res) => {
   const { userName, genre, bio, fullName } = req.body;
   if (userName.trim() === "")
     return res.status(422).json({ error: "username must not be empty" });
-  User.find({ userName: userName })
-    .then((foundUserName) => {
-      if (foundUserName.length !== 0)
-        return res.status(200).json({ message: "Username is already exist" });
+  // User.find({ userName: userName })
+  //   .then((foundUserName) => {
+  //     if (foundUserName.length !== 0)
+  //       return res.status(200).json({ message: "Username is already exist" });
 
       User.findByIdAndUpdate(
         req.user._id,
@@ -342,8 +457,20 @@ exports.updateUserDetails = (req, res) => {
           console.log(e);
           return res.status(422).json(e);
         });
-    })
-    .catch((e) => {
-      console.log(e);
-    });
+    // })
+    // .catch((e) => {
+    //   console.log(e);
+    // });
 };
+
+exports.checkUsernameAvailability = (req,res) => {
+  User.find({userName: req.params.userName, _id: {$ne: req.user._id}}).then(data => {
+    if(data.length !== 0){
+      return res.status(200).json({availability: false})
+    }else{
+      return res.status(200).json({availability: true});
+    }
+  }).catch(e => {
+    return res.status(422).json(e);
+  })
+}

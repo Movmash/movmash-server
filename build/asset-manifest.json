@@ -1,0 +1,30 @@
+{
+  "files": {
+    "main.css": "/static/css/main.e47f4e3b.chunk.css",
+    "main.js": "/static/js/main.60ab0639.chunk.js",
+    "main.js.map": "/static/js/main.60ab0639.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.1f4ba4c5.js",
+    "runtime-main.js.map": "/static/js/runtime-main.1f4ba4c5.js.map",
+    "static/css/2.1c9ef103.chunk.css": "/static/css/2.1c9ef103.chunk.css",
+    "static/js/2.e86f24f0.chunk.js": "/static/js/2.e86f24f0.chunk.js",
+    "static/js/2.e86f24f0.chunk.js.map": "/static/js/2.e86f24f0.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.16829ac61e4751c0d2a3c22ae04af4a2.js": "/precache-manifest.16829ac61e4751c0d2a3c22ae04af4a2.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.1c9ef103.chunk.css.map": "/static/css/2.1c9ef103.chunk.css.map",
+    "static/css/main.e47f4e3b.chunk.css.map": "/static/css/main.e47f4e3b.chunk.css.map",
+    "static/js/2.e86f24f0.chunk.js.LICENSE.txt": "/static/js/2.e86f24f0.chunk.js.LICENSE.txt",
+    "static/media/Movmash_logo.png": "/static/media/Movmash_logo.420d3f4a.png",
+    "static/media/host_crown_2.80714de7.svg": "/static/media/host_crown_2.80714de7.svg",
+    "static/media/live_show_cover_image_2.jpg": "/static/media/live_show_cover_image_2.9cbbb6d0.jpg",
+    "static/media/login_cover_pic_5.jpg": "/static/media/login_cover_pic_5.1c77321b.jpg",
+    "static/media/slick-theme.css": "/static/media/slick.f97e3bbf.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.1f4ba4c5.js",
+    "static/css/2.1c9ef103.chunk.css",
+    "static/js/2.e86f24f0.chunk.js",
+    "static/css/main.e47f4e3b.chunk.css",
+    "static/js/main.60ab0639.chunk.js"
+  ]
+}

@@ -33,7 +33,7 @@ module.exports = mashDBAuth = (req, res, next) => {
       //     return res.status(500).json({ e });
       //   });
     } else {
-      console.log("w " + err);
+      // console.log("w " + err);
       return res.status(403).json(err);
     }
   });
