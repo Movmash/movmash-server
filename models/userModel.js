@@ -4,13 +4,18 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
   {
+    provider: {
+      type: String,
+    },
+    authId: {
+      type: String,
+    },
     email: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
     },
     userName: {
       type: String,
@@ -23,9 +28,9 @@ const userSchema = new Schema(
     coverImageUrl: {
       type: String,
       default:
-        "https://www.setaswall.com/wp-content/uploads/2017/06/Closed-FB-Cover-Photo-851-x-315.jpg",
+        "https://movmash.s3.ap-south-1.amazonaws.com/default/cover-photo/default-cover.jpg",
     },
-    genre: String,
+    genre: [{ type: String, default: "" }],
     bio: String,
     followersCount: {
       type: Number,

@@ -1,5 +1,14 @@
 const users = [];
-const addUser = ({ id, name, room, host }) => {
+const addUser = ({
+  id,
+  userName,
+  room,
+  host,
+  fullName,
+  profileImageUrl,
+  watchSecond,
+  userId,
+}) => {
   //   name = name.trim().toLowerCase();
   //   room = room.trim().toLowerCase();
 
@@ -10,12 +19,29 @@ const addUser = ({ id, name, room, host }) => {
   //   if (!name || !room) return { error: "Username and room are required." };
   //   if (existingUser) return { error: "Username is taken." };
 
-  const user = { id, name, room, host };
+  const user = {
+    id,
+    userName,
+    room,
+    host,
+    fullName,
+    profileImageUrl,
+    watchSecond,
+    userId,
+  };
 
   users.push(user);
-  console.log(user);
+  // console.log(user);
   return { user };
 };
+
+const updateWatchSecond = (id, watchSecond) => {
+  const index = users.findIndex(data => data.id === id);
+  // console.log(id)
+  // console.log(index)
+  if (index !== -1)  users[index].watchSecond = watchSecond;
+  return users[index];
+}
 
 const removeUser = (id) => {
   const index = users.findIndex((user) => user.id === id);
@@ -39,4 +65,5 @@ module.exports = {
   getUserDetail,
   getUsersInRoom,
   getHostDetail,
+  updateWatchSecond,
 };
