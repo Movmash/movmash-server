@@ -158,14 +158,14 @@ const swaggerDocs = swaggerJsDoc(swaggerOption);
 const cookieSession = require('cookie-session');
 const passport = require("passport");
 const { profileImageUpload, coverImageUpload, deleteProfileImage } = require("./routes/fileRoutes");
-app.use(xss());
-app.use(
-  helmet({
-    contentSecurityPolicy:
-      process.env.NODE_ENV === "production" ? undefined : false,
-  })
-);
-app.use(mongoSanitize());
+// app.use(xss());
+// app.use(
+//   helmet({
+//     contentSecurityPolicy:
+//       process.env.NODE_ENV === "production" ? undefined : false,
+//   })
+// );
+// app.use(mongoSanitize());
 app.use(
   cookieSession({
     maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -173,11 +173,14 @@ app.use(
   })
 );
 app.use(
-  cors({
-    credentials: true,
-    origin: CLIENT_BASE_URL,
-  })
+  cors()
 );
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: CLIENT_BASE_URL,
+//   })
+// );
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api-docs",swaggerUI.serve,swaggerUI.setup(swaggerDocs));
