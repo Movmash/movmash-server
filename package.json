@@ -40,7 +40,7 @@
     "passport-google-oauth": "^2.0.0",
     "peer": "^0.6.1",
     "shortid": "^2.2.16",
-    "socket.io": "^2.4.1",
+    "socket.io": "^2.5.0",
     "swagger-jsdoc": "^6.0.0",
     "swagger-ui-express": "^4.1.6",
     "uuid": "^8.3.1",
